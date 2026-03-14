@@ -8,7 +8,7 @@ I built Frenmot because I was tired of generic language apps that didn't let me 
 
 So I built it from scratch. No frameworks, no backend, no monthly subscription. Just a fast, offline-first web app that syncs to your Google Drive.
 
-![Frenmot Preview](app_logo.png)
+![Frenmot Preview](readme_frenmot.png)
 
 ---
 
