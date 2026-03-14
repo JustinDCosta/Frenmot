@@ -2,6 +2,8 @@
 
 > **Live App →** [frenmot.web.app](https://frenmot.web.app)
 
+*A zero-dependency, offline-first Spanish & French Spaced Repetition System (SRS) built entirely in a single HTML file — syncs directly to your Google Drive.*
+
 I built Frenmot because I was tired of generic language apps that didn't let me learn the words *I actually encountered* while reading French books, watching films, or chatting with native speakers. I wanted something that was mine — a tool where I could paste a page of French text, have an AI extract the hard vocabulary, and then drill those exact words using spaced repetition until they stuck.
 
 So I built it from scratch. No frameworks, no backend, no monthly subscription. Just a fast, offline-first web app that syncs to your Google Drive.
@@ -124,4 +126,4 @@ firebase deploy
 
 ## 📄 License
 
-© 2026. All rights reserved. Built as a personal learning tool and portfolio project.
+This project is open-source under the **[MIT License](LICENSE)**. Feel free to fork it, modify it, or use it to learn your own target language.
