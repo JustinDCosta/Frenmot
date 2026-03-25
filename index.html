@@ -38,6 +38,20 @@
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
         .dark .glass-panel { background: rgba(30, 41, 59, 0.7); }
+        /* Star Rating */
+        .star-btn { transition: all 0.2s; cursor: pointer; font-size: 2rem; filter: grayscale(1) opacity(0.35); }
+        .star-btn:hover, .star-btn.active { filter: grayscale(0) opacity(1); transform: scale(1.25); }
+        /* Maturity Bar */
+        .maturity-segment { height: 12px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); min-width: 2px; }
+        .maturity-segment:first-child { border-radius: 6px 0 0 6px; }
+        .maturity-segment:last-child { border-radius: 0 6px 6px 0; }
+        /* Calendar */
+        .cal-day { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; font-weight: 500; position: relative; }
+        .cal-day.active { background: #6366f1; color: white; font-weight: 700; }
+        .cal-day.today { box-shadow: 0 0 0 2px #6366f1; }
+        .cal-day.empty { visibility: hidden; }
+        /* Progress bar animation */
+        .progress-fill { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-50 transition-colors duration-300 min-h-[100dvh] flex flex-col overflow-x-hidden">
@@ -115,8 +129,10 @@
     <!-- NAVBAR -->
     <nav class="fixed top-0 w-full h-16 glass-panel border-b border-slate-200 dark:border-slate-700 flex items-center justify-between px-4 md:px-8 z-40">
         <div class="text-2xl font-extrabold text-primary tracking-tight flex items-center gap-2">
-            Frenmot 
-            <span id="streak-badge" class="hidden text-sm px-2 py-0.5 bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 rounded-full font-bold items-center gap-1 shadow-sm">
+            <button type="button" onclick="nav('landing')" class="hover:opacity-80 transition-opacity cursor-pointer">
+                Frenmot
+            </button>
+            <span id="streak-badge" onclick="openCalendarModal()" class="hidden text-sm px-2 py-0.5 bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 rounded-full font-bold items-center gap-1 shadow-sm cursor-pointer hover:bg-orange-200 dark:hover:bg-orange-900/60 transition">
                 🔥 <span id="streak-count">0</span>
             </span>
         </div>
@@ -159,8 +175,11 @@
     <div id="settings-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-sm bg-white dark:bg-darkCard rounded-3xl shadow-2xl z-50 p-8 opacity-0 pointer-events-none transition-all duration-300 scale-95 border border-slate-100 dark:border-slate-700">
         <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-1" data-i18n="settings">App Settings</h2>
         
-        <!-- DISPLAY USER NAME IN SETTINGS MODAL -->
-        <p id="settings-user-name" class="text-sm font-semibold text-primary mb-6 truncate"></p>
+        <!-- EDITABLE USER NAME -->
+        <div class="flex items-center gap-2 mb-6 mt-3">
+            <input type="text" id="settings-name-input" placeholder="Your display name" class="flex-1 text-sm font-semibold text-primary bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary transition" />
+            <button onclick="saveCustomName()" class="px-3 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primaryHover transition shadow-sm" title="Save name">✓</button>
+        </div>
 
         <div class="flex justify-between items-center mb-6">
             <span class="font-semibold text-slate-700 dark:text-slate-300" data-i18n="language">Language</span>
@@ -180,6 +199,31 @@
             <button onclick="logoutApp()" class="w-full py-3 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 rounded-xl font-bold hover:bg-red-200 transition" data-i18n="logout">Logout & Switch Account</button>
         </div>
         <button onclick="closeModal()" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold hover:bg-primaryHover transition mt-4 shadow-lg shadow-primary/30" data-i18n="save_close">Save & Close</button>
+    </div>
+
+    <!-- ACTIVITY CALENDAR MODAL -->
+    <div id="calendar-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-white dark:bg-darkCard rounded-3xl shadow-2xl z-50 p-6 md:p-8 opacity-0 pointer-events-none transition-all duration-300 scale-95 border border-slate-100 dark:border-slate-700">
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="calendarNav(-1)" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
+            <h2 id="cal-month-title" class="text-lg font-bold text-slate-900 dark:text-white"></h2>
+            <button onclick="calendarNav(1)" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center mb-2">
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Mo</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Tu</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase">We</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Th</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Fr</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Sa</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase">Su</span>
+        </div>
+        <div id="cal-grid" class="grid grid-cols-7 gap-1 justify-items-center mb-6"></div>
+        <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-streak" class="text-2xl font-black text-primary">0</div><div class="text-[11px] text-slate-400 font-semibold">Current Streak</div></div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-longest" class="text-2xl font-black text-amber-500">0</div><div class="text-[11px] text-slate-400 font-semibold">Longest Streak</div></div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-total" class="text-2xl font-black text-emerald-500">0</div><div class="text-[11px] text-slate-400 font-semibold">Total Days</div></div>
+        </div>
+        <button onclick="closeModal()" class="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition mt-5">Close</button>
     </div>
 
     <div id="word-def-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-white dark:bg-darkCard rounded-3xl shadow-2xl z-50 p-8 text-center opacity-0 pointer-events-none transition-all duration-300 scale-95 border border-slate-100 dark:border-slate-700">
@@ -233,10 +277,85 @@
         </section>
 
         <!-- REVIEW SECTION -->
-        <section id="review-section" class="app-section w-full max-w-3xl mx-auto p-4 md:p-8 hidden">
-            <div id="active-review" class="w-full mt-4 md:mt-10">
-                <div class="text-center mb-6"><h1 class="text-2xl md:text-3xl font-bold" data-i18n="review_mode">Review Mode</h1><p class="text-slate-500 dark:text-slate-400" data-i18n="test_memory">Test your memory</p></div>
+        <section id="review-section" class="app-section w-full max-w-4xl mx-auto p-4 md:p-8 hidden">
+
+            <!-- DASHBOARD VIEW -->
+            <div id="review-dashboard" class="w-full mt-4 md:mt-10">
+                <div class="text-center mb-8">
+                    <h1 class="text-2xl md:text-3xl font-bold">Let's Practice 🎯</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">Your daily vocabulary training dashboard</p>
+                </div>
+
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-3 gap-3 md:gap-5 mb-8">
+                    <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-6 text-center shadow-sm">
+                        <div id="stat-due" class="text-3xl md:text-4xl font-black text-red-500">0</div>
+                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1">Due Today</div>
+                    </div>
+                    <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-6 text-center shadow-sm">
+                        <div id="stat-mastered" class="text-3xl md:text-4xl font-black text-emerald-500">0</div>
+                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1">Mastered</div>
+                    </div>
+                    <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-6 text-center shadow-sm">
+                        <div id="stat-total" class="text-3xl md:text-4xl font-black text-primary">0</div>
+                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1">Total Words</div>
+                    </div>
+                </div>
+
+                <!-- WORD MATURITY BAR -->
+                <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-5 md:p-6 shadow-sm mb-8">
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Word Maturity Distribution</h3>
+                    <div class="flex w-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800" id="maturity-bar"></div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>New</span>
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Learning</span>
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>Familiar</span>
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>Mastered</span>
+                    </div>
+                </div>
+
+                <!-- DUE WORDS PREVIEW -->
+                <div id="due-words-preview" class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-8 overflow-hidden">
+                    <div class="p-5 md:p-6 pb-3">
+                        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Words Due for Review</h3>
+                    </div>
+                    <div id="due-words-list" class="max-h-[240px] overflow-y-auto px-5 md:px-6 pb-5"></div>
+                </div>
+
+                <!-- START PRACTICE CTA -->
+                <div id="start-practice-wrap">
+                    <button onclick="startPracticeSession()" id="start-practice-btn" class="w-full py-4 md:py-5 bg-primary text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary/30 hover:bg-primaryHover hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Start Practice
+                    </button>
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div id="no-review" class="hidden mt-8 text-center bg-white dark:bg-darkCard border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-10">
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h2 class="text-2xl font-bold mb-2">All caught up!</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mb-2">You have no words due for review right now.</p>
+                    <p id="next-due-text" class="text-sm text-primary font-semibold mb-6"></p>
+                    <button onclick="nav('list')" class="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover transition shadow-lg shadow-primary/30">Add Words</button>
+                </div>
+            </div>
+
+            <!-- FLASHCARD DRILL VIEW (hidden until practice starts) -->
+            <div id="drill-view" class="w-full mt-4 md:mt-10 hidden">
+                <!-- Progress Bar -->
+                <div class="flex items-center gap-4 mb-6">
+                    <button onclick="finishPracticeEarly()" class="text-slate-400 hover:text-primary transition" title="Back to Dashboard">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    </button>
+                    <div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+                        <div id="drill-progress" class="progress-fill h-full bg-gradient-to-r from-primary to-indigo-400 rounded-full" style="width:0%"></div>
+                    </div>
+                    <span id="drill-counter" class="text-sm font-bold text-slate-500 dark:text-slate-400 min-w-[50px] text-right">0/0</span>
+                </div>
+
+                <!-- Flashcard -->
                 <div id="flashcard" onclick="revealCard()" class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-3xl p-8 md:p-12 shadow-xl hover:-translate-y-1 transition-all cursor-pointer min-h-[300px] flex flex-col items-center justify-center text-center group">
+                    <p class="text-xs font-semibold text-slate-300 dark:text-slate-600 mb-4 uppercase tracking-wider">Tap to reveal</p>
                     <div id="card-word" class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white break-words"></div>
                     <div id="card-back" class="hidden mt-8 w-full animate-[fadeIn_0.3s_ease-in]">
                         <div class="h-px bg-slate-100 dark:bg-slate-700 w-full mb-8"></div>
@@ -244,22 +363,24 @@
                         <div id="card-en" class="text-lg md:text-xl text-slate-500 dark:text-slate-400"></div>
                     </div>
                 </div>
-                <div id="srs-controls" class="hidden mt-8 grid-cols-1 md:grid-cols-3 gap-4">
-                    <button onclick="processReview(1, event)" class="py-4 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 active:scale-95 transition-all shadow-lg shadow-red-500/30 flex flex-col items-center leading-tight">
-                        <span data-i18n="hard">Hard</span><span id="btn-hard-time" class="text-xs opacity-80 font-normal"></span>
-                    </button>
-                    <button onclick="processReview(3, event)" class="py-4 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all shadow-lg shadow-amber-500/30 flex flex-col items-center leading-tight">
-                        <span data-i18n="good">Good</span><span id="btn-good-time" class="text-xs opacity-80 font-normal"></span>
-                    </button>
-                    <button onclick="processReview(5, event)" class="py-4 rounded-xl font-bold text-white bg-emerald-500 hover:bg-emerald-600 active:scale-95 transition-all shadow-lg shadow-emerald-500/30 flex flex-col items-center leading-tight">
-                        <span data-i18n="easy">Easy</span><span id="btn-easy-time" class="text-xs opacity-80 font-normal"></span>
-                    </button>
+
+                <!-- Star Rating -->
+                <div id="srs-controls" class="hidden mt-6">
+                    <p class="text-center text-sm font-semibold text-slate-400 dark:text-slate-500 mb-3">How well did you know this?</p>
+                    <div class="flex justify-center gap-2 md:gap-3" id="star-container"></div>
                 </div>
             </div>
-            <div id="no-review" class="hidden mt-20 text-center bg-white dark:bg-darkCard border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-10">
-                <div class="text-6xl mb-4">🎉</div><h2 class="text-2xl font-bold mb-2" data-i18n="caught_up">All caught up!</h2><p class="text-slate-500 dark:text-slate-400" data-i18n="no_words_due">You have no words due for review right now.</p>
-                <button onclick="nav('list')" class="mt-6 px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover transition shadow-lg shadow-primary/30" data-i18n="add_words">Add Words</button>
+
+            <!-- SESSION COMPLETE VIEW -->
+            <div id="session-complete" class="w-full mt-4 md:mt-10 hidden">
+                <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-3xl p-10 md:p-14 shadow-xl text-center">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-2">Session Complete!</h2>
+                    <p id="session-summary" class="text-slate-500 dark:text-slate-400 text-lg mb-8"></p>
+                    <button onclick="backToDashboard()" class="px-8 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover transition shadow-lg shadow-primary/30">Back to Dashboard</button>
+                </div>
             </div>
+
         </section>
 
         <!-- LIST SECTION -->
@@ -452,7 +573,7 @@
             { word: "Aller", frDef: "Se déplacer vers un lieu", enDef: "To go" }
         ];
 
-        let appState = { streak: 0, lastLogin: null };
+        let appState = { streak: 0, lastLogin: null, loginHistory: [], customName: null };
         let vocabData = [];
         let reviewQueue = [];
         let currentTheme = localStorage.getItem('theme') || 'light';
@@ -509,7 +630,7 @@
             }
         }
 
-        window.onload = function() {
+        window.addEventListener('load', function() {
             loadVerbsDatabase(); 
             changeLanguage(currentLang);
             checkGoogleLoaded();
@@ -544,7 +665,7 @@
                     }
                 }
             }
-        };
+        });
 
         function handleCredentialResponse(response) {
             const payload = parseJwt(response.credential);
@@ -678,6 +799,14 @@
                         if (cloudDate > localDate) {
                             appState.lastLogin = cloudState.lastLogin;
                         }
+                        // Merge login history (keep unique dates)
+                        if (cloudState.loginHistory) {
+                            appState.loginHistory = [...new Set([...(appState.loginHistory || []), ...cloudState.loginHistory])].sort((a,b) => new Date(a) - new Date(b));
+                        }
+                        // Merge custom name if exists in cloud but not local
+                        if (cloudState.customName && !appState.customName) {
+                            appState.customName = cloudState.customName;
+                        }
                     }
 
                     let newWordsAdded = 0;
@@ -741,6 +870,12 @@
 
         function updateHabitTracker() {
             const todayStr = new Date().toDateString();
+            if (!appState.loginHistory) appState.loginHistory = [];
+            
+            if (!appState.loginHistory.includes(todayStr)) {
+                appState.loginHistory.push(todayStr);
+            }
+
             if (appState.lastLogin !== todayStr) {
                 if (appState.lastLogin) {
                     const lastDate = new Date(appState.lastLogin);
@@ -801,8 +936,10 @@
                     const parsed = JSON.parse(storedState);
                     appState.streak = (typeof parsed.streak === 'number' && parsed.streak >= 0) ? parsed.streak : 0;
                     appState.lastLogin = parsed.lastLogin || null;
+                    appState.loginHistory = Array.isArray(parsed.loginHistory) ? parsed.loginHistory : (parsed.lastLogin ? [parsed.lastLogin] : []);
+                    appState.customName = parsed.customName || null;
                 } catch(e) {
-                    appState = { streak: 0, lastLogin: null };
+                    appState = { streak: 0, lastLogin: null, loginHistory: [], customName: null };
                 }
             }
             
@@ -837,29 +974,125 @@
             renderList();
             
             // Set User Display Name Prominently
-            const userName = localStorage.getItem('frenmotUserName') || sessionStorage.getItem('frenmotUserName');
+            const googleName = localStorage.getItem('frenmotUserName') || sessionStorage.getItem('frenmotUserName');
+            const displayName = appState.customName || googleName;
+            
             const greetingEl = document.getElementById('user-greeting');
             if (greetingEl) {
                 if (isOfflineMode) {
                     greetingEl.innerText = "Offline";
-                } else if (userName) {
-                    greetingEl.innerText = "👋 " + userName;
+                } else if (displayName) {
+                    greetingEl.innerText = "👋 " + displayName;
                 } else {
                     greetingEl.innerText = "";
                 }
             }
         }
 
+        function saveCustomName() {
+            const input = document.getElementById('settings-name-input');
+            const val = input.value.trim();
+            appState.customName = val || null;
+            saveData();
+            updateUI();
+            
+            // Show save feedback
+            const btn = input.nextElementSibling;
+            btn.innerHTML = 'Saved!';
+            btn.classList.replace('bg-primary', 'bg-emerald-500');
+            setTimeout(() => {
+                btn.innerHTML = '✓';
+                btn.classList.replace('bg-emerald-500', 'bg-primary');
+            }, 1500);
+        }
+
         function toggleSettings() {
-            document.getElementById('lang-select').value = currentLang;
             const modal = document.getElementById('settings-modal');
             
             // Update User Name in settings modal
-            const userName = localStorage.getItem('frenmotUserName') || sessionStorage.getItem('frenmotUserName');
-            document.getElementById('settings-user-name').innerText = isOfflineMode ? 'Offline Mode' : (userName ? `Signed in as: ${userName}` : '');
+            const googleName = localStorage.getItem('frenmotUserName') || sessionStorage.getItem('frenmotUserName');
+            const displayName = appState.customName || googleName;
+            const settingsUserNameEl = document.getElementById('settings-user-name');
+            if (settingsUserNameEl) {
+                settingsUserNameEl.innerText = isOfflineMode ? 'Offline Mode' : (googleName ? `Google Acct: ${googleName}` : '');
+            }
+            
+            // Populate editable input
+            document.getElementById('settings-name-input').value = displayName || '';
 
             document.getElementById('def-overlay').classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95'); }, 10);
+        }
+        
+        let currentCalDate = new Date();
+        
+        function openCalendarModal() {
+            currentCalDate = new Date();
+            renderCalendar();
+            document.getElementById('def-overlay').classList.remove('hidden');
+            const modal = document.getElementById('calendar-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95'); }, 10);
+        }
+        
+        function calendarNav(offset) {
+            currentCalDate.setMonth(currentCalDate.getMonth() + offset);
+            renderCalendar();
+        }
+        
+        function renderCalendar() {
+            const year = currentCalDate.getFullYear();
+            const month = currentCalDate.getMonth();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('cal-month-title').innerText = `${monthNames[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            // Adjust to Monday-start week
+            const startDayOffset = firstDay === 0 ? 6 : firstDay - 1;
+            
+            const grid = document.getElementById('cal-grid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < startDayOffset; i++) {
+                grid.innerHTML += `<div class="cal-day empty"></div>`;
+            }
+            
+            const historySet = new Set(appState.loginHistory || []);
+            const todayStr = new Date().toDateString();
+            
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = new Date(year, month, d).toDateString();
+                const isLogged = historySet.has(dateStr);
+                const isToday = dateStr === todayStr;
+                
+                let classes = "cal-day";
+                if (isLogged) classes += " active";
+                if (isToday) classes += " today";
+                if (!isLogged && !isToday) classes += " text-slate-700 dark:text-slate-300";
+                
+                grid.innerHTML += `<div class="${classes}">${d}</div>`;
+            }
+            
+            document.getElementById('cal-streak').innerText = appState.streak;
+            document.getElementById('cal-total').innerText = historySet.size;
+            
+            // Calculate hypothetical longest streak (simple version)
+            let maxStreak = 0; let currentS = 0; let lastTime = 0;
+            const sortedDates = Array.from(historySet).map(d => new Date(d).getTime()).sort((a,b) => a-b);
+            sortedDates.forEach(time => {
+                if (lastTime === 0) { currentS = 1; }
+                else {
+                    const diff = Math.round((time - lastTime) / (1000 * 60 * 60 * 24));
+                    if (diff === 1) currentS++;
+                    else if (diff > 1) currentS = 1;
+                }
+                maxStreak = Math.max(maxStreak, currentS);
+                lastTime = time;
+            });
+            document.getElementById('cal-longest').innerText = Math.max(maxStreak, appState.streak);
         }
 
         function toggleTheme(isDark) {
@@ -1143,30 +1376,94 @@
         }
 
         // --- SPACED REPETITION ENGINE ---
+        let drillQueue = [];
+        let drillTotal = 0;
+
         function calculateNextInterval(w, quality) {
             if (quality < 3) return 1; 
             if (w.repetitions === 0) return 1;
             if (w.repetitions === 1) return 6;
-            const factor = quality === 5 ? 1.3 : 1.0; 
+            const factor = quality === 5 ? 1.3 : quality === 4 ? 1.15 : 1.0; 
             return Math.round(w.interval * w.easeFactor * factor);
         }
 
+        function startPracticeSession() {
+            drillQueue = [...reviewQueue];
+            drillTotal = drillQueue.length;
+            if(drillTotal === 0) return;
+            
+            document.getElementById('review-dashboard').classList.add('hidden');
+            document.getElementById('drill-view').classList.remove('hidden');
+            document.getElementById('session-complete').classList.add('hidden');
+            
+            loadNextDrillCard();
+        }
+
+        function finishPracticeEarly() {
+            document.getElementById('drill-view').classList.add('hidden');
+            if (drillQueue.length < drillTotal) {
+                // They did some words, show complete screen
+                showSessionComplete(drillTotal - drillQueue.length);
+            } else {
+                // Didn't do any words, back to dashboard
+                renderReviewDashboard();
+            }
+        }
+
+        function loadNextDrillCard() {
+            if (drillQueue.length === 0) {
+                document.getElementById('drill-view').classList.add('hidden');
+                showSessionComplete(drillTotal);
+                return;
+            }
+
+            const w = drillQueue[0];
+            const progress = ((drillTotal - drillQueue.length) / drillTotal) * 100;
+            document.getElementById('drill-progress').style.width = `${progress}%`;
+            document.getElementById('drill-counter').innerText = `${drillTotal - drillQueue.length}/${drillTotal}`;
+            
+            document.getElementById('card-word').innerText = w.word;
+            document.getElementById('card-fr').innerText = w.frDef;
+            document.getElementById('card-en').innerText = w.enDef;
+            
+            document.getElementById('card-back').classList.add('hidden');
+            document.getElementById('srs-controls').classList.add('hidden');
+        }
+
         function revealCard() {
-            if(reviewQueue.length > 0) {
+            if(drillQueue.length > 0) {
                 document.getElementById('card-back').classList.remove('hidden');
                 document.getElementById('srs-controls').classList.remove('hidden');
-                document.getElementById('srs-controls').classList.add('grid');
                 
-                const w = reviewQueue[0];
-                document.getElementById('btn-hard-time').innerText = `(+1d)`;
-                document.getElementById('btn-good-time').innerText = `(+${calculateNextInterval(w, 3)}d)`;
-                document.getElementById('btn-easy-time').innerText = `(+${calculateNextInterval(w, 5)}d)`;
+                const w = drillQueue[0];
+                const container = document.getElementById('star-container');
+                container.innerHTML = '';
+                
+                const starColors = [
+                    'text-red-500',    // 1: Total blackout
+                    'text-orange-500', // 2: Hard
+                    'text-yellow-400', // 3: OK
+                    'text-lime-500',   // 4: Good
+                    'text-emerald-500' // 5: Easy
+                ];
+                
+                for (let i = 1; i <= 5; i++) {
+                    const intv = i < 3 ? 1 : calculateNextInterval(w, i);
+                    container.innerHTML += `
+                        <div class="flex flex-col items-center">
+                            <button onclick="processReview(${i}, event)" class="star-btn ${starColors[i-1]} hover:scale-110 active:scale-95" title="Confidence ${i}/5">★</button>
+                            <span class="text-[10px] font-bold text-slate-400 mt-1">+${intv}d</span>
+                        </div>
+                    `;
+                }
             }
         }
 
         function processReview(quality, e) {
             e.stopPropagation(); 
-            let w = reviewQueue.shift(); 
+            let w = drillQueue.shift(); 
+            // Also remove from main review queue so dashboard stays synced
+            reviewQueue = reviewQueue.filter(rw => rw.id !== w.id);
             
             w.interval = calculateNextInterval(w, quality);
             if (quality < 3) w.repetitions = 0; else w.repetitions++;
@@ -1176,33 +1473,112 @@
             w.nextReviewDate = nextDate.getTime();
             
             saveData(); 
-            renderReview();
+            loadNextDrillCard();
         }
 
-        function renderReview() {
-            const activeRev = document.getElementById('active-review');
+        function showSessionComplete(reviewedCount) {
+            document.getElementById('session-complete').classList.remove('hidden');
+            const summary = document.getElementById('session-summary');
+            if (reviewedCount === drillTotal) {
+                summary.innerText = `You dominated ${reviewedCount} words! Enjoy your newly expanded vocabulary.`;
+            } else {
+                summary.innerText = `You practiced ${reviewedCount} words before finishing early. Every bit counts!`;
+            }
+        }
+
+        function backToDashboard() {
+            updateUI(); // Will re-render dashboard
+        }
+
+        function renderReviewDashboard() {
+            const dashboard = document.getElementById('review-dashboard');
+            const sessionComp = document.getElementById('session-complete');
+            const drillView = document.getElementById('drill-view');
             const noRev = document.getElementById('no-review');
-            const cardBack = document.getElementById('card-back');
-            const controls = document.getElementById('srs-controls');
+            
+            dashboard.classList.remove('hidden');
+            sessionComp.classList.add('hidden');
+            drillView.classList.add('hidden');
 
             if (!reviewQueue || reviewQueue.length === 0) {
-                if(activeRev) activeRev.classList.add('hidden');
-                if(noRev) noRev.classList.remove('hidden');
-                return;
+                document.getElementById('start-practice-wrap').classList.add('hidden');
+                document.getElementById('due-words-preview').classList.add('hidden');
+                noRev.classList.remove('hidden');
+                
+                // Find next due word
+                const nextWords = [...vocabData].sort((a,b) => a.nextReviewDate - b.nextReviewDate);
+                if(nextWords.length > 0 && nextWords[0].nextReviewDate > Date.now()) {
+                    const nextDate = new Date(nextWords[0].nextReviewDate);
+                    document.getElementById('next-due-text').innerText = `Next review: ${nextDate.toLocaleDateString()} at ${nextDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                } else {
+                    document.getElementById('next-due-text').innerText = '';
+                }
+            } else {
+                document.getElementById('start-practice-wrap').classList.remove('hidden');
+                document.getElementById('due-words-preview').classList.remove('hidden');
+                noRev.classList.add('hidden');
+                
+                // Populate due words list
+                const listEl = document.getElementById('due-words-list');
+                listEl.innerHTML = reviewQueue.map(w => `
+                    <div class="flex justify-between items-center py-3 border-b border-slate-100 dark:border-slate-800/60 last:border-0 last:pb-0">
+                        <div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 text-sm">${escapeHtml(w.word)}</div>
+                            <div class="text-slate-500 text-xs italic">${escapeHtml(w.frDef)}</div>
+                        </div>
+                        <div class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-400">
+                            Rep ${w.repetitions}
+                        </div>
+                    </div>
+                `).join('');
             }
             
-            if(activeRev) activeRev.classList.remove('hidden');
-            if(noRev) noRev.classList.add('hidden');
-            if(cardBack) cardBack.classList.add('hidden');
-            if(controls) {
-                controls.classList.add('hidden');
-                controls.classList.remove('grid');
-            }
+            // Build stats
+            let mastered = 0; let newW = 0; let learnW = 0; let famW = 0;
+            vocabData.forEach(w => {
+                const rep = w.repetitions || 0;
+                if(rep === 0) newW++;
+                else if(rep >= 1 && rep <= 3) learnW++;
+                else if(rep >= 4 && rep <= 7) famW++;
+                else { famW++; /* fallback */ if(rep >= 8) { mastered++; famW--; } }
+            });
+            
+            document.getElementById('stat-due').innerText = reviewQueue.length;
+            document.getElementById('stat-mastered').innerText = mastered;
+            document.getElementById('stat-total').innerText = vocabData.length;
+            
+            const total = vocabData.length > 0 ? vocabData.length : 1;
+            const bar = document.getElementById('maturity-bar');
+            bar.innerHTML = `
+                <div class="maturity-segment bg-red-400" style="width: ${(newW/total)*100}%" title="New: ${newW}"></div>
+                <div class="maturity-segment bg-amber-400" style="width: ${(learnW/total)*100}%" title="Learning: ${learnW}"></div>
+                <div class="maturity-segment bg-sky-400" style="width: ${(famW/total)*100}%" title="Familiar: ${famW}"></div>
+                <div class="maturity-segment bg-emerald-400" style="width: ${(mastered/total)*100}%" title="Mastered: ${mastered}"></div>
+            `;
+        }
 
-            const currentWord = reviewQueue[0];
-            document.getElementById('card-word').innerText = currentWord.word;
-            document.getElementById('card-fr').innerText = currentWord.frDef;
-            document.getElementById('card-en').innerText = currentWord.enDef;
+        // Make sure updateUI calls renderReviewDashboard instead of renderReview
+        function updateUI() {
+            reviewQueue = vocabData.filter(w => w.nextReviewDate <= Date.now());
+            document.getElementById('desktop-due-badge').innerText = reviewQueue.length;
+            document.getElementById('mobile-due-badge').innerText = reviewQueue.length;
+            renderReviewDashboard(); 
+            renderList();
+            
+            // Set User Display Name Prominently
+            const googleName = localStorage.getItem('frenmotUserName') || sessionStorage.getItem('frenmotUserName');
+            const displayName = appState.customName || googleName;
+            
+            const greetingEl = document.getElementById('user-greeting');
+            if (greetingEl) {
+                if (isOfflineMode) {
+                    greetingEl.innerText = "Offline";
+                } else if (displayName) {
+                    greetingEl.innerText = "👋 " + displayName;
+                } else {
+                    greetingEl.innerText = "";
+                }
+            }
         }
 
         // --- CORE UI FUNCTIONS ---
@@ -1298,6 +1674,14 @@
             resizeTimer = setTimeout(() => {
                 if(!document.getElementById('landing-section').classList.contains('hidden')) { renderFloatingWords(); }
             }, 250);
+        });
+
+        // --- INITIALIZATION ---
+        window.addEventListener('load', () => {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            if (!loadingOverlay) return;
+            setTimeout(() => { loadingOverlay.classList.add('opacity-0', 'pointer-events-none'); }, 500);
+            setTimeout(() => { loadingOverlay.remove(); }, 1200);
         });
     </script>
 </body>
