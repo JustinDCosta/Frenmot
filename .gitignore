@@ -67,3 +67,10 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Local scratch / patch dumps
+*.patch
+diff.txt
+patch_diff.txt
+init_code.txt
+temp.js

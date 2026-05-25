@@ -3,55 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Frenmot - Learn French</title>
+    <title>Frenmot — Learn French</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { 
-                extend: { 
-                    colors: { primary: '#6366f1', primaryHover: '#4f46e5', darkBg: '#0f172a', darkCard: '#1e293b' },
+            theme: {
+                extend: {
+                    colors: {
+                        primary:      'rgb(var(--c-primary)        / <alpha-value>)',
+                        primaryHover: 'rgb(var(--c-primary-hover)  / <alpha-value>)',
+                        accent:       'rgb(var(--c-accent)         / <alpha-value>)',
+                        primarySoft:  'rgb(var(--c-primary-soft)   / <alpha-value>)',
+                        darkBg:       'rgb(var(--c-dark-bg)        / <alpha-value>)',
+                        darkCard:     'rgb(var(--c-dark-card)      / <alpha-value>)'
+                    },
+                    fontFamily: {
+                        sans:    ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Fraunces', 'Georgia', 'serif']
+                    },
                     keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(15px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        }
+                        fadeInUp: { '0%': { opacity: '0', transform: 'translateY(15px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        floaty:   { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } }
                     },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                        'fade-in-up': 'fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'floaty':     'floaty 6s ease-in-out infinite'
                     }
-                } 
+                }
             }
         }
     </script>
     <style>
-        body { font-family: 'Inter', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* --- Theme palettes (channels in R G B form so Tailwind <alpha-value> works) --- */
+        :root {
+            --c-dark-bg:   15 23 42;
+            --c-dark-card: 30 41 59;
+            /* Default: Lavande (indigo) */
+            --c-primary:        99 102 241;
+            --c-primary-hover:  79 70 229;
+            --c-primary-soft:   238 242 255;
+            --c-accent:         168 85 247;
+            --c-bg-tint:        248 250 252;
+        }
+        .dark {
+            --c-primary-soft: 49 46 129;
+            --c-bg-tint:      15 23 42;
+        }
+        [data-theme="bordeaux"] {
+            --c-primary:        190 18 60;
+            --c-primary-hover:  159 18 57;
+            --c-primary-soft:   255 241 242;
+            --c-accent:         244 114 182;
+            --c-bg-tint:        255 251 250;
+        }
+        .dark[data-theme="bordeaux"] { --c-primary-soft: 76 5 25; --c-bg-tint: 15 23 42; }
+
+        [data-theme="emeraude"] {
+            --c-primary:        5 150 105;
+            --c-primary-hover:  4 120 87;
+            --c-primary-soft:   236 253 245;
+            --c-accent:         52 211 153;
+            --c-bg-tint:        247 252 249;
+        }
+        .dark[data-theme="emeraude"] { --c-primary-soft: 6 78 59; --c-bg-tint: 15 23 42; }
+
+        [data-theme="soleil"] {
+            --c-primary:        234 88 12;
+            --c-primary-hover:  194 65 12;
+            --c-primary-soft:   255 247 237;
+            --c-accent:         251 146 60;
+            --c-bg-tint:        253 251 247;
+        }
+        .dark[data-theme="soleil"] { --c-primary-soft: 124 45 18; --c-bg-tint: 15 23 42; }
+
+        [data-theme="azur"] {
+            --c-primary:        2 132 199;
+            --c-primary-hover:  3 105 161;
+            --c-primary-soft:   240 249 255;
+            --c-accent:         56 189 248;
+            --c-bg-tint:        247 251 254;
+        }
+        .dark[data-theme="azur"] { --c-primary-soft: 12 74 110; --c-bg-tint: 15 23 42; }
+
+        [data-theme="cafe"] {
+            --c-primary:        146 64 14;
+            --c-primary-hover:  120 53 15;
+            --c-primary-soft:   254 252 232;
+            --c-accent:         217 119 6;
+            --c-bg-tint:        252 250 245;
+        }
+        .dark[data-theme="cafe"] { --c-primary-soft: 69 26 3; --c-bg-tint: 15 23 42; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: rgb(var(--c-bg-tint));
+            background-image:
+                radial-gradient(circle at 12% -10%, rgba(var(--c-primary), 0.08), transparent 45%),
+                radial-gradient(circle at 90% 110%, rgba(var(--c-accent), 0.06), transparent 50%);
+            transition: background-color .4s ease;
+        }
+        .dark body { background-color: rgb(var(--c-dark-bg)); }
+        .font-display { font-family: 'Fraunces', Georgia, serif; }
+
+        /* Toggle slider */
         .theme-switch input { display: none; }
         .slider { transition: .3s; border-radius: 34px; }
         .slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: #6366f1; }
+        input:checked + .slider { background-color: rgb(var(--c-primary)); }
         input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
-        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
-        .dark .glass-panel { background: rgba(30, 41, 59, 0.7); }
-        /* Star Rating */
+
+        /* Glass nav */
+        .glass-panel { background: rgba(255, 255, 255, 0.72); backdrop-filter: saturate(180%) blur(14px); }
+        .dark .glass-panel { background: rgba(15, 23, 42, 0.72); }
+
+        /* Star rating */
         .star-btn { transition: all 0.2s; cursor: pointer; font-size: 2rem; filter: grayscale(1) opacity(0.35); }
-        .star-btn:hover, .star-btn.active { filter: grayscale(0) opacity(1); transform: scale(1.25); }
-        /* Maturity Bar */
+        .star-btn:hover, .star-btn.active { filter: grayscale(0) opacity(1); transform: scale(1.22); }
+
+        /* Maturity bar */
         .maturity-segment { height: 12px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1); min-width: 2px; }
         .maturity-segment:first-child { border-radius: 6px 0 0 6px; }
-        .maturity-segment:last-child { border-radius: 0 6px 6px 0; }
+        .maturity-segment:last-child  { border-radius: 0 6px 6px 0; }
+
         /* Calendar */
         .cal-day { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; font-weight: 500; position: relative; }
-        .cal-day.active { background: #6366f1; color: white; font-weight: 700; }
-        .cal-day.today { box-shadow: 0 0 0 2px #6366f1; }
-        .cal-day.empty { visibility: hidden; }
-        /* Progress bar animation */
+        .cal-day.active { background: rgb(var(--c-primary)); color: white; font-weight: 700; }
+        .cal-day.today  { box-shadow: 0 0 0 2px rgb(var(--c-primary)); }
+        .cal-day.empty  { visibility: hidden; }
+
+        /* Progress fill */
         .progress-fill { transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        /* Theme swatches */
+        .theme-swatch {
+            position: relative;
+            width: 38px; height: 38px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform .2s, box-shadow .2s;
+            border: 2px solid transparent;
+        }
+        .theme-swatch:hover { transform: translateY(-2px); }
+        .theme-swatch.active { border-color: rgb(var(--c-primary)); box-shadow: 0 6px 20px -8px rgba(0,0,0,.25); }
+        .theme-swatch.active::after {
+            content: '✓'; position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 800; font-size: 16px;
+            text-shadow: 0 1px 2px rgba(0,0,0,.4);
+        }
+
+        /* Decorative French rule */
+        .fr-rule {
+            display: inline-flex; align-items: center; gap: .5rem;
+            font-size: 11px; letter-spacing: .25em;
+            text-transform: uppercase; font-weight: 700;
+            color: rgb(var(--c-primary));
+        }
+        .fr-rule::before, .fr-rule::after {
+            content: ''; height: 1px; width: 28px;
+            background: linear-gradient(to right, transparent, rgb(var(--c-primary)));
+        }
+        .fr-rule::after { background: linear-gradient(to left, transparent, rgb(var(--c-primary))); }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-50 transition-colors duration-300 min-h-[100dvh] flex flex-col overflow-x-hidden">
@@ -70,7 +199,8 @@
             </div>
 
             <!-- Header -->
-            <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300 tracking-tight mb-3">Frenmot</h1>
+            <div class="fr-rule mb-4" data-i18n="apprendre_le_francais">Apprendre · Le · Français</div>
+            <h1 class="font-display text-5xl font-black tracking-tight mb-3 text-slate-900 dark:text-white">Frenmot</h1>
             <p class="text-slate-500 dark:text-slate-400 mb-8 text-[15px] leading-relaxed px-2" data-i18n="login_desc">Master French vocabulary and conjugations. Sync your progress securely to Google Drive.</p>
             
             <!-- Google Auth Configuration -->
@@ -109,7 +239,7 @@
                 <svg class="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
             
-            <p class="text-[11.5px] text-slate-400 dark:text-slate-500 mt-5 font-medium leading-tight">Offline mode saves your vocabulary exclusively to this device's local memory.</p>
+            <p class="text-[11.5px] text-slate-400 dark:text-slate-500 mt-5 font-medium leading-tight" data-i18n="offline_disclaimer">Offline mode saves your vocabulary exclusively to this device's local memory.</p>
         </div>
     </div>
 
@@ -172,13 +302,22 @@
     <!-- OVERLAYS & MODALS -->
     <div id="def-overlay" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden" onclick="closeModal()"></div>
     
-    <div id="settings-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-sm bg-white dark:bg-darkCard rounded-3xl shadow-2xl z-50 p-8 opacity-0 pointer-events-none transition-all duration-300 scale-95 border border-slate-100 dark:border-slate-700">
-        <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-1" data-i18n="settings">App Settings</h2>
-        
+    <div id="settings-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-sm bg-white dark:bg-darkCard rounded-3xl shadow-2xl z-50 p-8 opacity-0 pointer-events-none transition-all duration-300 scale-95 border border-slate-100 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+        <h2 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-1" data-i18n="settings">App Settings</h2>
+        <p class="text-xs text-slate-400 dark:text-slate-500 mb-6" data-i18n="settings_subtitle">Tune Frenmot to your taste.</p>
+
         <!-- EDITABLE USER NAME -->
-        <div class="flex items-center gap-2 mb-6 mt-3">
-            <input type="text" id="settings-name-input" placeholder="Your display name" class="flex-1 text-sm font-semibold text-primary bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary transition" />
+        <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2" data-i18n="display_name">Display name</label>
+        <div class="flex items-center gap-2 mb-6">
+            <input type="text" id="settings-name-input" data-i18n-attr="placeholder" data-i18n="display_name_ph" placeholder="Your display name" class="flex-1 text-sm font-semibold text-primary bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary transition" />
             <button onclick="saveCustomName()" class="px-3 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primaryHover transition shadow-sm" title="Save name">✓</button>
+        </div>
+
+        <!-- COLOR THEME -->
+        <div class="mb-6">
+            <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3" data-i18n="color_theme">Color theme</label>
+            <div id="theme-swatches" class="flex flex-wrap gap-2.5"></div>
+            <div class="text-xs text-slate-400 dark:text-slate-500 mt-2" id="active-theme-label"></div>
         </div>
 
         <div class="flex justify-between items-center mb-6">
@@ -209,21 +348,21 @@
             <button onclick="calendarNav(1)" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
         </div>
         <div class="grid grid-cols-7 gap-1 text-center mb-2">
-            <span class="text-[11px] font-bold text-slate-400 uppercase">Mo</span>
-            <span class="text-[11px] font-bold text-slate-400 uppercase">Tu</span>
-            <span class="text-[11px] font-bold text-slate-400 uppercase">We</span>
-            <span class="text-[11px] font-bold text-slate-400 uppercase">Th</span>
-            <span class="text-[11px] font-bold text-slate-400 uppercase">Fr</span>
-            <span class="text-[11px] font-bold text-slate-400 uppercase">Sa</span>
-            <span class="text-[11px] font-bold text-slate-400 uppercase">Su</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase" data-i18n="cal_mo">Mo</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase" data-i18n="cal_tu">Tu</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase" data-i18n="cal_we">We</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase" data-i18n="cal_th">Th</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase" data-i18n="cal_fr">Fr</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase" data-i18n="cal_sa">Sa</span>
+            <span class="text-[11px] font-bold text-slate-400 uppercase" data-i18n="cal_su">Su</span>
         </div>
         <div id="cal-grid" class="grid grid-cols-7 gap-1 justify-items-center mb-6"></div>
         <div class="grid grid-cols-3 gap-3 text-center">
-            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-streak" class="text-2xl font-black text-primary">0</div><div class="text-[11px] text-slate-400 font-semibold">Current Streak</div></div>
-            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-longest" class="text-2xl font-black text-amber-500">0</div><div class="text-[11px] text-slate-400 font-semibold">Longest Streak</div></div>
-            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-total" class="text-2xl font-black text-emerald-500">0</div><div class="text-[11px] text-slate-400 font-semibold">Total Days</div></div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-streak" class="text-2xl font-black text-primary">0</div><div class="text-[11px] text-slate-400 font-semibold" data-i18n="current_streak">Current Streak</div></div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-longest" class="text-2xl font-black text-amber-500">0</div><div class="text-[11px] text-slate-400 font-semibold" data-i18n="longest_streak">Longest Streak</div></div>
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3"><div id="cal-total" class="text-2xl font-black text-emerald-500">0</div><div class="text-[11px] text-slate-400 font-semibold" data-i18n="total_days">Total Days</div></div>
         </div>
-        <button onclick="closeModal()" class="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition mt-5">Close</button>
+        <button onclick="closeModal()" class="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition mt-5" data-i18n="close">Close</button>
     </div>
 
     <div id="word-def-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-md bg-white dark:bg-darkCard rounded-3xl shadow-2xl z-50 p-8 text-center opacity-0 pointer-events-none transition-all duration-300 scale-95 border border-slate-100 dark:border-slate-700">
@@ -251,23 +390,23 @@
 
             <div class="bg-white dark:bg-darkCard p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 mb-8">
                 <form onsubmit="handleConjugate(event)" class="flex flex-col md:flex-row gap-4 mb-6 relative">
-                    <input type="text" id="verb-input" placeholder="e.g. etre, manger, aller" required class="flex-1 p-4 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary outline-none text-lg transition">
+                    <input type="text" id="verb-input" data-i18n-attr="placeholder" data-i18n="conj_placeholder" placeholder="e.g. être, manger, aller" required class="flex-1 p-4 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary outline-none text-lg transition">
                     <button type="submit" class="px-8 py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:bg-primaryHover transition flex items-center justify-center min-w-[140px]">
                         <span id="conj-btn-text" data-i18n="conjugate">Conjugate</span>
                     </button>
                 </form>
                 
                 <div id="conjugation-result" class="hidden w-full mt-8">
-                    <h2 id="conj-target-verb" class="text-3xl md:text-4xl font-black text-primary text-center capitalize mb-8 pb-4"></h2>
+                    <h2 id="conj-target-verb" class="font-display text-3xl md:text-4xl font-black text-primary text-center capitalize mb-8 pb-4"></h2>
                     
                     <!-- Direct Figaro Redirect UI for unhandled irregulars -->
-                    <div id="figaro-link-card" class="col-span-full hidden flex-col items-center justify-center py-12 px-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl border border-indigo-200 dark:border-indigo-800">
-                        <div class="bg-indigo-100 dark:bg-indigo-900/40 p-4 rounded-full mb-4">
-                            <svg class="w-8 h-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    <div id="figaro-link-card" class="col-span-full hidden flex-col items-center justify-center py-12 px-6 bg-primarySoft rounded-3xl border border-primary/20">
+                        <div class="bg-white dark:bg-darkCard p-4 rounded-full mb-4 shadow">
+                            <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Complex Irregular Verb</h3>
-                        <p class="text-slate-500 dark:text-slate-400 text-center max-w-md mb-6">This verb is highly irregular. To ensure 100% linguistic accuracy across all rare tenses, please view it directly on Le Figaro.</p>
-                        <a id="figaro-btn" href="#" target="_blank" class="px-8 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover shadow-lg shadow-primary/30 transition hover:-translate-y-0.5">View Full Conjugation</a>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2" data-i18n="complex_verb_title">Complex irregular verb</h3>
+                        <p class="text-slate-500 dark:text-slate-400 text-center max-w-md mb-6" data-i18n="complex_verb_desc">This verb is highly irregular. To ensure 100% linguistic accuracy across all rare tenses, please view it directly on Le Figaro.</p>
+                        <a id="figaro-btn" href="#" target="_blank" class="px-8 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover shadow-lg shadow-primary/30 transition hover:-translate-y-0.5" data-i18n="view_full_conj">View full conjugation</a>
                     </div>
 
                     <!-- Native Grid for Math & Hardcoded verbs -->
@@ -282,42 +421,43 @@
             <!-- DASHBOARD VIEW -->
             <div id="review-dashboard" class="w-full mt-4 md:mt-10">
                 <div class="text-center mb-8">
-                    <h1 class="text-2xl md:text-3xl font-bold">Let's Practice 🎯</h1>
-                    <p class="text-slate-500 dark:text-slate-400 mt-1">Your daily vocabulary training dashboard</p>
+                    <div class="fr-rule mb-3" data-i18n="rule_pratique">Pratique · Quotidienne</div>
+                    <h1 class="font-display text-2xl md:text-3xl font-bold" data-i18n="practice_title">Let's practice</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1" data-i18n="practice_subtitle">Your daily vocabulary training dashboard</p>
                 </div>
 
                 <!-- STATS CARDS -->
                 <div class="grid grid-cols-3 gap-3 md:gap-5 mb-8">
                     <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-6 text-center shadow-sm">
                         <div id="stat-due" class="text-3xl md:text-4xl font-black text-red-500">0</div>
-                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1">Due Today</div>
+                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1" data-i18n="due_today">Due Today</div>
                     </div>
                     <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-6 text-center shadow-sm">
                         <div id="stat-mastered" class="text-3xl md:text-4xl font-black text-emerald-500">0</div>
-                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1">Mastered</div>
+                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1" data-i18n="mastered_w">Mastered</div>
                     </div>
                     <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-6 text-center shadow-sm">
                         <div id="stat-total" class="text-3xl md:text-4xl font-black text-primary">0</div>
-                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1">Total Words</div>
+                        <div class="text-[11px] md:text-xs text-slate-400 font-semibold mt-1" data-i18n="total_words">Total Words</div>
                     </div>
                 </div>
 
                 <!-- WORD MATURITY BAR -->
                 <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl p-5 md:p-6 shadow-sm mb-8">
-                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Word Maturity Distribution</h3>
+                    <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3" data-i18n="maturity_dist">Word Maturity Distribution</h3>
                     <div class="flex w-full rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800" id="maturity-bar"></div>
                     <div class="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>New</span>
-                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Learning</span>
-                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>Familiar</span>
-                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>Mastered</span>
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-red-400"></span><span data-i18n="new_w">New</span></span>
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span><span data-i18n="learning_w">Learning</span></span>
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span><span data-i18n="familiar_w">Familiar</span></span>
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span><span data-i18n="mastered_w">Mastered</span></span>
                     </div>
                 </div>
 
                 <!-- DUE WORDS PREVIEW -->
                 <div id="due-words-preview" class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm mb-8 overflow-hidden">
                     <div class="p-5 md:p-6 pb-3">
-                        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Words Due for Review</h3>
+                        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300" data-i18n="due_for_review">Words Due for Review</h3>
                     </div>
                     <div id="due-words-list" class="max-h-[240px] overflow-y-auto px-5 md:px-6 pb-5"></div>
                 </div>
@@ -326,17 +466,17 @@
                 <div id="start-practice-wrap">
                     <button onclick="startPracticeSession()" id="start-practice-btn" class="w-full py-4 md:py-5 bg-primary text-white rounded-2xl font-bold text-lg shadow-xl shadow-primary/30 hover:bg-primaryHover hover:-translate-y-0.5 transition-all flex items-center justify-center gap-3">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        Start Practice
+                        <span data-i18n="start_practice">Start Practice</span>
                     </button>
                 </div>
 
                 <!-- EMPTY STATE -->
                 <div id="no-review" class="hidden mt-8 text-center bg-white dark:bg-darkCard border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-10">
                     <div class="text-6xl mb-4">🎉</div>
-                    <h2 class="text-2xl font-bold mb-2">All caught up!</h2>
-                    <p class="text-slate-500 dark:text-slate-400 mb-2">You have no words due for review right now.</p>
+                    <h2 class="font-display text-2xl font-bold mb-2" data-i18n="caught_up">All caught up!</h2>
+                    <p class="text-slate-500 dark:text-slate-400 mb-2" data-i18n="no_words_due">You have no words due for review right now.</p>
                     <p id="next-due-text" class="text-sm text-primary font-semibold mb-6"></p>
-                    <button onclick="nav('list')" class="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover transition shadow-lg shadow-primary/30">Add Words</button>
+                    <button onclick="nav('list')" class="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover transition shadow-lg shadow-primary/30" data-i18n="add_words">Add Words</button>
                 </div>
             </div>
 
@@ -344,19 +484,19 @@
             <div id="drill-view" class="w-full mt-4 md:mt-10 hidden">
                 <!-- Progress Bar -->
                 <div class="flex items-center gap-4 mb-6">
-                    <button onclick="finishPracticeEarly()" class="text-slate-400 hover:text-primary transition" title="Back to Dashboard">
+                    <button onclick="finishPracticeEarly()" class="text-slate-400 hover:text-primary transition" data-i18n-attr="title" data-i18n="back_dashboard" title="Back to Dashboard">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                     </button>
                     <div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
-                        <div id="drill-progress" class="progress-fill h-full bg-gradient-to-r from-primary to-indigo-400 rounded-full" style="width:0%"></div>
+                        <div id="drill-progress" class="progress-fill h-full bg-gradient-to-r from-primary to-accent rounded-full" style="width:0%"></div>
                     </div>
                     <span id="drill-counter" class="text-sm font-bold text-slate-500 dark:text-slate-400 min-w-[50px] text-right">0/0</span>
                 </div>
 
                 <!-- Flashcard -->
                 <div id="flashcard" onclick="revealCard()" class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-3xl p-8 md:p-12 shadow-xl hover:-translate-y-1 transition-all cursor-pointer min-h-[300px] flex flex-col items-center justify-center text-center group">
-                    <p class="text-xs font-semibold text-slate-300 dark:text-slate-600 mb-4 uppercase tracking-wider">Tap to reveal</p>
-                    <div id="card-word" class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white break-words"></div>
+                    <p class="text-xs font-semibold text-slate-300 dark:text-slate-600 mb-4 uppercase tracking-wider" data-i18n="tap_reveal">Tap to reveal</p>
+                    <div id="card-word" class="font-display text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white break-words"></div>
                     <div id="card-back" class="hidden mt-8 w-full animate-[fadeIn_0.3s_ease-in]">
                         <div class="h-px bg-slate-100 dark:bg-slate-700 w-full mb-8"></div>
                         <div id="card-fr" class="text-xl md:text-2xl text-primary font-bold italic mb-3"></div>
@@ -366,7 +506,7 @@
 
                 <!-- Star Rating -->
                 <div id="srs-controls" class="hidden mt-6">
-                    <p class="text-center text-sm font-semibold text-slate-400 dark:text-slate-500 mb-3">How well did you know this?</p>
+                    <p class="text-center text-sm font-semibold text-slate-400 dark:text-slate-500 mb-3" data-i18n="rate_recall">How well did you know this?</p>
                     <div class="flex justify-center gap-2 md:gap-3" id="star-container"></div>
                 </div>
             </div>
@@ -375,9 +515,9 @@
             <div id="session-complete" class="w-full mt-4 md:mt-10 hidden">
                 <div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-3xl p-10 md:p-14 shadow-xl text-center">
                     <div class="text-6xl mb-4">🏆</div>
-                    <h2 class="text-2xl md:text-3xl font-bold mb-2">Session Complete!</h2>
+                    <h2 class="font-display text-2xl md:text-3xl font-bold mb-2" data-i18n="session_complete">Session Complete!</h2>
                     <p id="session-summary" class="text-slate-500 dark:text-slate-400 text-lg mb-8"></p>
-                    <button onclick="backToDashboard()" class="px-8 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover transition shadow-lg shadow-primary/30">Back to Dashboard</button>
+                    <button onclick="backToDashboard()" class="px-8 py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-primaryHover transition shadow-lg shadow-primary/30" data-i18n="back_dashboard">Back to Dashboard</button>
                 </div>
             </div>
 
@@ -386,7 +526,10 @@
         <!-- LIST SECTION -->
         <section id="list-section" class="app-section w-full max-w-5xl mx-auto p-4 md:p-8 hidden">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <div><h1 class="text-2xl md:text-3xl font-bold" data-i18n="vocab_list">Your Vocabulary</h1></div>
+                <div>
+                    <div class="fr-rule mb-2" data-i18n="rule_lexique">Votre · Lexique</div>
+                    <h1 class="font-display text-2xl md:text-3xl font-bold" data-i18n="vocab_list">Your Vocabulary</h1>
+                </div>
                 <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <button onclick="toggleForm('manual-form')" class="px-5 py-2.5 rounded-xl font-bold border-2 border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary transition bg-transparent w-full sm:w-auto" data-i18n="add_manual">Add Manually</button>
                     <button onclick="toggleForm('import-form')" class="px-5 py-2.5 rounded-xl font-bold bg-primary text-white hover:bg-primaryHover shadow-lg shadow-primary/30 transition w-full sm:w-auto flex items-center justify-center gap-2" data-i18n="import_json">Import JSON</button>
@@ -397,7 +540,7 @@
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search your vocabulary..." class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-darkCard focus:ring-2 focus:ring-primary outline-none transition shadow-sm">
+                <input type="text" id="search-input" onkeyup="handleSearch()" data-i18n-attr="placeholder" data-i18n="search_vocab" placeholder="Search your vocabulary..." class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-darkCard focus:ring-2 focus:ring-primary outline-none transition shadow-sm">
             </div>
             
             <div id="manual-form" class="hidden bg-white dark:bg-darkCard p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 mb-8">
@@ -405,12 +548,12 @@
                 <form onsubmit="addManualWord(event)" class="space-y-4">
                     <div class="flex flex-col md:flex-row gap-4">
                         <div class="flex-1 relative flex items-center">
-                            <input type="text" id="add-w" placeholder="Word (e.g. Flâner)" required class="w-full p-3.5 pr-24 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none transition">
-                            <button type="button" onclick="autoTranslate()" class="absolute right-2 px-3 py-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 text-xs font-bold rounded-lg hover:bg-indigo-200 transition flex items-center gap-1">✨ Auto</button>
+                            <input type="text" id="add-w" data-i18n-attr="placeholder" data-i18n="word_input_ph" placeholder="Word (e.g. Flâner)" required class="w-full p-3.5 pr-24 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none transition">
+                            <button type="button" onclick="autoTranslate()" class="absolute right-2 px-3 py-1.5 bg-primarySoft text-primary text-xs font-bold rounded-lg hover:bg-primary/15 transition flex items-center gap-1"><span data-i18n="auto_btn">✨ Auto</span></button>
                         </div>
-                        <input type="text" id="add-fr" placeholder="Easy French Definition" required class="flex-[2] p-3.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none transition">
+                        <input type="text" id="add-fr" data-i18n-attr="placeholder" data-i18n="fr_def_ph" placeholder="Easy French definition" required class="flex-[2] p-3.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none transition">
                     </div>
-                    <input type="text" id="add-en" placeholder="English Translation" required class="w-full p-3.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none transition">
+                    <input type="text" id="add-en" data-i18n-attr="placeholder" data-i18n="en_translation_ph" placeholder="English translation" required class="w-full p-3.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-transparent focus:ring-2 focus:ring-primary outline-none transition">
                     <div class="flex gap-3 justify-end pt-4">
                         <button type="button" onclick="toggleForm('none')" class="px-6 py-2.5 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition" data-i18n="cancel">Cancel</button>
                         <button type="submit" class="px-6 py-2.5 rounded-xl font-bold bg-primary text-white hover:bg-primaryHover transition" data-i18n="save_word">Save Word</button>
@@ -420,20 +563,20 @@
 
             <div id="import-form" class="hidden bg-white dark:bg-darkCard p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 mb-8 transition-all">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-xl" data-i18n="import_json">Import from LLM (JSON)</h3>
-                    <button onclick="toggleInstructions()" class="text-sm font-bold text-primary hover:text-primaryHover bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">How to use</button>
+                    <h3 class="font-bold text-xl" data-i18n="import_llm_title">Import from LLM (JSON)</h3>
+                    <button onclick="toggleInstructions()" class="text-sm font-bold text-primary hover:text-primaryHover bg-primarySoft px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition" data-i18n="how_to_use">How to use</button>
                 </div>
                 
                 <div id="llm-instructions" class="hidden bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl text-sm text-slate-700 dark:text-slate-300 mb-6 border border-slate-200 dark:border-slate-700">
-                    <p class="font-bold text-base mb-3 text-slate-900 dark:text-white">Step-by-step Guide:</p>
+                    <p class="font-bold text-base mb-3 text-slate-900 dark:text-white" data-i18n="step_guide">Step-by-step guide</p>
                     <ol class="list-decimal pl-5 space-y-2 mb-4">
-                        <li>Copy the exact prompt from the box below.</li>
-                        <li>Open your favorite AI (Gemini, ChatGPT, Claude) and paste the prompt along with the French text or words you want to learn.</li>
-                        <li>Copy the JSON code the AI generates.</li>
-                        <li>Paste it into the text box below and click <strong>Import JSON</strong>.</li>
+                        <li data-i18n="step_1">Copy the exact prompt from the box below.</li>
+                        <li data-i18n="step_2">Open your favorite AI (Gemini, ChatGPT, Claude) and paste the prompt along with the French text or words you want to learn.</li>
+                        <li data-i18n="step_3">Copy the JSON code the AI generates.</li>
+                        <li data-i18n="step_4_html">Paste it into the text box below and click <strong>Import JSON</strong>.</li>
                     </ol>
                     <div class="bg-white dark:bg-darkBg p-4 rounded-xl border border-slate-200 dark:border-slate-700 font-mono text-xs md:text-sm text-slate-600 dark:text-slate-400 select-all relative group">
-                        <div class="absolute -top-3 left-3 bg-white dark:bg-darkBg px-2 text-[10px] font-bold text-primary uppercase tracking-wider">Copy This Prompt</div>
+                        <div class="absolute -top-3 left-3 bg-white dark:bg-darkBg px-2 text-[10px] font-bold text-primary uppercase tracking-wider" data-i18n="copy_prompt">Copy this prompt</div>
                         Extract the difficult vocabulary words from the text I provide below. For each word, provide: 1. The word, 2. A simple definition in easy French, 3. The English translation. Output the result STRICTLY as a raw JSON array of objects using the exact keys: "word", "easy_french", and "english". Do not include any markdown formatting, no explanations, just the JSON array.
                     </div>
                 </div>
@@ -446,8 +589,17 @@
             </div>
 
             <div id="word-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 pb-8"></div>
+            <div id="empty-vocab" class="hidden text-center py-16">
+                <div class="text-5xl mb-3">📚</div>
+                <p class="text-slate-500 dark:text-slate-400" data-i18n="empty_vocab">No matching words. Try another search.</p>
+            </div>
         </section>
     </main>
+
+    <!-- French Quote Footer -->
+    <div id="quote-footer" class="hidden md:block fixed bottom-3 left-1/2 -translate-x-1/2 text-center px-4 z-30 pointer-events-none">
+        <p id="quote-text" class="font-display italic text-xs text-slate-400 dark:text-slate-500 max-w-md"></p>
+    </div>
 
     <script>
         // --- 100% OFFLINE DICTIONARY FOR TOP IRREGULAR VERBS ---
@@ -525,43 +677,357 @@
         // --- INTERNATIONALIZATION (i18n) ---
         const i18n = {
             en: {
+                // Nav + global
                 explore: "Explore", verbs: "Verbs", review: "Review", list: "List", conjugate: "Conjugate",
+                sync_drive: "Sync to Drive", click_to_sync: "Click to sync", syncing: "Syncing…",
+                synced_ok: "Synced ✓", synced_count: "Synced (+{n})", created_backup: "Backup created",
+                sync_error: "Sync error", saving: "Saving…",
+
+                // Login
+                apprendre_le_francais: "Apprendre · Le · Français",
                 login_desc: "Master French vocabulary and conjugations. Sync your progress securely to Google Drive.",
-                continue_offline: "Continue Offline", or: "or", sync_drive: "Sync to Drive",
-                settings: "App Settings", language: "Language", dark_mode: "Dark Mode",
-                logout: "Logout & Switch Account", save_close: "Save & Close", bg_text: "TOUCHEZ<br>UN MOT",
-                conj_title: "Conjugation Engine", conj_desc: "Search any French verb to retrieve all official tenses and moods.",
-                review_mode: "Review Mode", test_memory: "Test your memory", hard: "Hard", good: "Good", easy: "Easy",
-                caught_up: "All caught up!", no_words_due: "You have no words due for review right now.", add_words: "Add Words",
-                vocab_list: "Your Vocabulary", add_manual: "Add Manually", import_json: "Import JSON", add_word: "Add a New Word",
-                cancel: "Cancel", save_word: "Save Word", close: "Close", remember_me: "Stay logged in"
+                continue_offline: "Continue offline", or: "or",
+                remember_me: "Stay logged in",
+                offline_disclaimer: "Offline mode saves your vocabulary exclusively to this device's local memory.",
+
+                // Settings
+                settings: "App settings",
+                settings_subtitle: "Tune Frenmot to your taste.",
+                display_name: "Display name", display_name_ph: "Your display name",
+                color_theme: "Color theme",
+                language: "Language", dark_mode: "Dark mode",
+                logout: "Logout & switch account", save_close: "Save & close",
+                close: "Close",
+
+                // Landing
+                bg_text: "TOUCHEZ<br>UN MOT",
+
+                // Conjugation
+                conj_title: "Conjugation engine",
+                conj_desc: "Search any French verb to retrieve all official tenses and moods.",
+                conj_placeholder: "e.g. être, manger, aller",
+                complex_verb_title: "Complex irregular verb",
+                complex_verb_desc: "This verb is highly irregular. To ensure 100% linguistic accuracy across all rare tenses, view it on Le Figaro.",
+                view_full_conj: "View full conjugation",
+
+                // Review dashboard
+                rule_pratique: "Daily · Practice",
+                practice_title: "Let's practice",
+                practice_subtitle: "Your daily vocabulary training dashboard",
+                due_today: "Due today",
+                mastered_w: "Mastered",
+                total_words: "Total words",
+                maturity_dist: "Word maturity distribution",
+                new_w: "New", learning_w: "Learning", familiar_w: "Familiar",
+                due_for_review: "Words due for review",
+                start_practice: "Start practice",
+                next_review: "Next review",
+                caught_up: "All caught up!",
+                no_words_due: "You have no words due for review right now.",
+                add_words: "Add words",
+                rep_short: "Rep",
+
+                // Drill
+                tap_reveal: "Tap to reveal",
+                rate_recall: "How well did you know this?",
+                back_dashboard: "Back to dashboard",
+                session_complete: "Session complete!",
+                summary_full:  "You dominated {n} words. Enjoy your newly expanded vocabulary.",
+                summary_early: "You practiced {n} words before finishing early. Every bit counts.",
+
+                // Star labels
+                star_1: "Blackout", star_2: "Hard", star_3: "OK", star_4: "Good", star_5: "Easy",
+                days_short: "d",
+
+                // List
+                rule_lexique: "Your · Lexicon",
+                vocab_list: "Your vocabulary",
+                add_manual: "Add manually", import_json: "Import JSON",
+                add_word: "Add a new word",
+                cancel: "Cancel", save_word: "Save word",
+                search_vocab: "Search your vocabulary…",
+                word_input_ph: "Word (e.g. Flâner)",
+                fr_def_ph: "Easy French definition",
+                en_translation_ph: "English translation",
+                auto_btn: "✨ Auto",
+                import_llm_title: "Import from LLM (JSON)",
+                how_to_use: "How to use",
+                step_guide: "Step-by-step guide",
+                step_1: "Copy the exact prompt from the box below.",
+                step_2: "Open your favorite AI (Gemini, ChatGPT, Claude) and paste the prompt along with the French text or words you want to learn.",
+                step_3: "Copy the JSON code the AI generates.",
+                step_4_html: "Paste it into the text box below and click <strong>Import JSON</strong>.",
+                copy_prompt: "Copy this prompt",
+                empty_vocab: "No matching words. Try another search.",
+                due_label: "Due",
+                reset_short: "Reset",
+                delete_word_title: "Delete word",
+                reset_progress_title: "Reset progress",
+
+                // Calendar
+                cal_mo: "Mo", cal_tu: "Tu", cal_we: "We", cal_th: "Th", cal_fr: "Fr", cal_sa: "Sa", cal_su: "Su",
+                month_0:"January", month_1:"February", month_2:"March", month_3:"April", month_4:"May", month_5:"June",
+                month_6:"July", month_7:"August", month_8:"September", month_9:"October", month_10:"November", month_11:"December",
+                current_streak: "Current streak", longest_streak: "Longest streak", total_days: "Total days",
+                next_review_at: "Next review: {d} at {t}",
+
+                // Greetings + status
+                offline_label: "Offline",
+                hello_user: "👋 {name}",
+
+                // Alerts / confirms
+                confirm_delete: "Delete this word?",
+                word_exists: "\"{w}\" already exists in your list.",
+                invalid_json: "Invalid JSON format.",
+                imported_count: "Imported {n} new words!",
+                reset_done: "Progress reset. It is now in your review queue.",
+                no_word_typed: "Type a word first.",
+                translating: "Translating…",
+                translation_unavail: "Translation unavailable",
+                translate_timeout: "Timed out",
+                offline_alert: "You are offline. Logout via Settings to connect Google.",
+                google_blocked: "Google login was blocked by the browser. Please disable ad-blockers or check your network.",
+                google_not_loaded: "Google script didn't load. Please check your connection or disable ad-blockers.",
+                name_saved: "Saved!",
+
+                // Theme labels
+                theme_lavande: "Lavande", theme_bordeaux: "Bordeaux", theme_emeraude: "Émeraude",
+                theme_soleil: "Soleil", theme_azur: "Azur", theme_cafe: "Café",
+
+                // Quotes (rotating, displayed verbatim in French)
+                quote_active: "« On ne voit bien qu'avec le cœur. »  — Saint-Exupéry"
             },
             fr: {
+                // Nav + global
                 explore: "Explorer", verbs: "Verbes", review: "Réviser", list: "Liste", conjugate: "Conjuguer",
+                sync_drive: "Synchroniser", click_to_sync: "Cliquer pour synchroniser", syncing: "Synchronisation…",
+                synced_ok: "Synchronisé ✓", synced_count: "Synchronisé (+{n})", created_backup: "Sauvegarde créée",
+                sync_error: "Erreur de synchronisation", saving: "Enregistrement…",
+
+                // Login
+                apprendre_le_francais: "Apprendre · Le · Français",
                 login_desc: "Maîtrisez le vocabulaire et les conjugaisons. Synchronisez vos progrès en toute sécurité sur Google Drive.",
-                continue_offline: "Continuer Hors Ligne", or: "ou", sync_drive: "Synchroniser (Drive)",
-                settings: "Paramètres", language: "Langue", dark_mode: "Mode Sombre",
-                logout: "Se Déconnecter", save_close: "Sauvegarder", bg_text: "TOUCHER<br>UN MOT",
-                conj_title: "Moteur de Conjugaison", conj_desc: "Recherchez n'importe quel verbe pour obtenir tous les temps et modes.",
-                review_mode: "Mode Révision", test_memory: "Testez votre mémoire", hard: "Difficile", good: "Bon", easy: "Facile",
-                caught_up: "Tout est à jour !", no_words_due: "Vous n'avez aucun mot à réviser pour le moment.", add_words: "Ajouter des Mots",
-                vocab_list: "Votre Vocabulaire", add_manual: "Ajouter", import_json: "Importer JSON", add_word: "Nouveau Mot",
-                cancel: "Annuler", save_word: "Sauvegarder", close: "Fermer", remember_me: "Rester connecté"
+                continue_offline: "Continuer hors ligne", or: "ou",
+                remember_me: "Rester connecté",
+                offline_disclaimer: "En mode hors ligne, votre vocabulaire est conservé uniquement sur la mémoire locale de cet appareil.",
+
+                // Settings
+                settings: "Paramètres",
+                settings_subtitle: "Personnalisez Frenmot à votre goût.",
+                display_name: "Nom d'affichage", display_name_ph: "Votre nom d'affichage",
+                color_theme: "Palette de couleurs",
+                language: "Langue", dark_mode: "Mode sombre",
+                logout: "Se déconnecter", save_close: "Enregistrer",
+                close: "Fermer",
+
+                // Landing
+                bg_text: "TOUCHEZ<br>UN MOT",
+
+                // Conjugation
+                conj_title: "Moteur de conjugaison",
+                conj_desc: "Recherchez n'importe quel verbe pour obtenir tous les temps et modes.",
+                conj_placeholder: "ex. être, manger, aller",
+                complex_verb_title: "Verbe irrégulier complexe",
+                complex_verb_desc: "Ce verbe est très irrégulier. Pour garantir une exactitude linguistique totale sur tous les temps rares, consultez-le sur Le Figaro.",
+                view_full_conj: "Voir la conjugaison complète",
+
+                // Review dashboard
+                rule_pratique: "Pratique · Quotidienne",
+                practice_title: "À l'entraînement",
+                practice_subtitle: "Votre tableau de bord de révision quotidien",
+                due_today: "À réviser",
+                mastered_w: "Maîtrisés",
+                total_words: "Mots au total",
+                maturity_dist: "Distribution de maturité des mots",
+                new_w: "Nouveaux", learning_w: "En cours", familiar_w: "Familiers",
+                due_for_review: "Mots à réviser",
+                start_practice: "Commencer la séance",
+                next_review: "Prochaine révision",
+                caught_up: "Tout est à jour !",
+                no_words_due: "Vous n'avez aucun mot à réviser pour le moment.",
+                add_words: "Ajouter des mots",
+                rep_short: "Rép",
+
+                // Drill
+                tap_reveal: "Touchez pour révéler",
+                rate_recall: "À quel point connaissiez-vous ce mot ?",
+                back_dashboard: "Retour au tableau de bord",
+                session_complete: "Séance terminée !",
+                summary_full:  "Vous avez maîtrisé {n} mots. Profitez de votre vocabulaire enrichi.",
+                summary_early: "Vous avez révisé {n} mots avant de terminer plus tôt. Chaque effort compte.",
+
+                // Star labels
+                star_1: "Total", star_2: "Difficile", star_3: "Correct", star_4: "Bien", star_5: "Facile",
+                days_short: "j",
+
+                // List
+                rule_lexique: "Votre · Lexique",
+                vocab_list: "Votre vocabulaire",
+                add_manual: "Ajouter à la main", import_json: "Importer (JSON)",
+                add_word: "Nouveau mot",
+                cancel: "Annuler", save_word: "Enregistrer",
+                search_vocab: "Rechercher dans votre vocabulaire…",
+                word_input_ph: "Mot (ex. Flâner)",
+                fr_def_ph: "Définition simple en français",
+                en_translation_ph: "Traduction en anglais",
+                auto_btn: "✨ Auto",
+                import_llm_title: "Importer depuis un LLM (JSON)",
+                how_to_use: "Mode d'emploi",
+                step_guide: "Guide étape par étape",
+                step_1: "Copiez le prompt exact ci-dessous.",
+                step_2: "Ouvrez votre IA préférée (Gemini, ChatGPT, Claude) et collez le prompt avec le texte ou les mots à apprendre.",
+                step_3: "Copiez le JSON généré par l'IA.",
+                step_4_html: "Collez-le dans la zone ci-dessous et cliquez sur <strong>Importer (JSON)</strong>.",
+                copy_prompt: "Copier ce prompt",
+                empty_vocab: "Aucun mot trouvé. Essayez une autre recherche.",
+                due_label: "Échéance",
+                reset_short: "Réinitialiser",
+                delete_word_title: "Supprimer le mot",
+                reset_progress_title: "Réinitialiser la progression",
+
+                // Calendar
+                cal_mo: "Lu", cal_tu: "Ma", cal_we: "Me", cal_th: "Je", cal_fr: "Ve", cal_sa: "Sa", cal_su: "Di",
+                month_0:"Janvier", month_1:"Février", month_2:"Mars", month_3:"Avril", month_4:"Mai", month_5:"Juin",
+                month_6:"Juillet", month_7:"Août", month_8:"Septembre", month_9:"Octobre", month_10:"Novembre", month_11:"Décembre",
+                current_streak: "Série actuelle", longest_streak: "Plus longue série", total_days: "Jours au total",
+                next_review_at: "Prochaine révision : {d} à {t}",
+
+                // Greetings + status
+                offline_label: "Hors ligne",
+                hello_user: "👋 {name}",
+
+                // Alerts / confirms
+                confirm_delete: "Supprimer ce mot ?",
+                word_exists: "« {w} » figure déjà dans votre liste.",
+                invalid_json: "Format JSON invalide.",
+                imported_count: "{n} nouveaux mots importés !",
+                reset_done: "Progression réinitialisée. Le mot est dans votre file de révision.",
+                no_word_typed: "Saisissez d'abord un mot.",
+                translating: "Traduction…",
+                translation_unavail: "Traduction indisponible",
+                translate_timeout: "Délai dépassé",
+                offline_alert: "Vous êtes hors ligne. Déconnectez-vous via les paramètres pour vous connecter à Google.",
+                google_blocked: "La connexion Google a été bloquée par le navigateur. Désactivez les bloqueurs ou vérifiez votre réseau.",
+                google_not_loaded: "Le script Google ne s'est pas chargé. Vérifiez votre connexion ou désactivez les bloqueurs.",
+                name_saved: "Enregistré !",
+
+                // Theme labels
+                theme_lavande: "Lavande", theme_bordeaux: "Bordeaux", theme_emeraude: "Émeraude",
+                theme_soleil: "Soleil", theme_azur: "Azur", theme_cafe: "Café",
+
+                // Quotes
+                quote_active: "« On ne voit bien qu'avec le cœur. »  — Saint-Exupéry"
             }
         };
 
+        // Rotating French aphorisms shown in the quote footer
+        const FRENCH_QUOTES = [
+            "« On ne voit bien qu'avec le cœur. »  — Saint-Exupéry",
+            "« La vie est un songe, réalisons-le. »  — Mère Teresa",
+            "« Petit à petit, l'oiseau fait son nid. »  — Proverbe",
+            "« Lire, c'est boire et manger. »  — Victor Hugo",
+            "« Les mots sont les passants mystérieux de l'âme. »  — Hugo",
+            "« La langue française est une femme. »  — Anatole France"
+        ];
+
         let currentLang = localStorage.getItem('frenmotLang') || 'en';
+
+        // Translation helper with token interpolation: t('foo', { n: 3 })
+        function t(key, params) {
+            const dict = i18n[currentLang] || i18n.en;
+            let str = dict[key];
+            if (str === undefined) str = (i18n.en[key] !== undefined ? i18n.en[key] : key);
+            if (params) {
+                str = str.replace(/\{(\w+)\}/g, (m, k) => (params[k] !== undefined ? params[k] : m));
+            }
+            return str;
+        }
+
+        // Keys whose value is intentionally HTML and may be inserted via innerHTML
+        const HTML_I18N_KEYS = new Set(['bg_text', 'step_4_html']);
+
         function changeLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('frenmotLang', lang);
-            const htmlKeys = new Set(['bg_text']); // Keys that intentionally contain safe HTML (e.g. <br>)
+            document.documentElement.lang = lang;
+            const dict = i18n[lang] || i18n.en;
+
+            // Text/HTML on standard data-i18n elements
             document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if(i18n[lang][key]) {
-                    if (htmlKeys.has(key)) el.innerHTML = i18n[lang][key];
-                    else el.textContent = i18n[lang][key];
+                const key  = el.getAttribute('data-i18n');
+                const attr = el.getAttribute('data-i18n-attr');
+                if (dict[key] === undefined) return;
+                if (attr) {
+                    el.setAttribute(attr, dict[key]);
+                } else if (HTML_I18N_KEYS.has(key)) {
+                    el.innerHTML = dict[key];
+                } else {
+                    el.textContent = dict[key];
                 }
             });
+
+            // Sync settings select
+            const sel = document.getElementById('lang-select');
+            if (sel) sel.value = lang;
+
+            // Re-render dynamic content (may not exist on first call)
+            try { if (typeof updateUI === 'function') updateUI(); } catch (e) {}
+            try { if (typeof renderCalendar === 'function' && document.getElementById('cal-month-title')?.innerText) renderCalendar(); } catch (e) {}
+            try { if (typeof refreshThemeSwatches === 'function') refreshThemeSwatches(); } catch(e) {}
+            try { if (typeof rotateQuote === 'function') rotateQuote(); } catch (e) {}
+        }
+
+        // --- COLOR THEME ---
+        const THEMES = [
+            { key: 'lavande',  swatch: '#6366f1', label: 'theme_lavande' },
+            { key: 'bordeaux', swatch: '#be123c', label: 'theme_bordeaux' },
+            { key: 'emeraude', swatch: '#059669', label: 'theme_emeraude' },
+            { key: 'soleil',   swatch: '#ea580c', label: 'theme_soleil' },
+            { key: 'azur',     swatch: '#0284c7', label: 'theme_azur' },
+            { key: 'cafe',     swatch: '#92400e', label: 'theme_cafe' }
+        ];
+        let currentColorTheme = localStorage.getItem('frenmotColorTheme') || 'lavande';
+
+        function applyColorTheme(themeKey) {
+            const found = THEMES.find(th => th.key === themeKey) ? themeKey : 'lavande';
+            currentColorTheme = found;
+            localStorage.setItem('frenmotColorTheme', found);
+            if (found === 'lavande') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', found);
+            }
+            refreshThemeSwatches();
+        }
+
+        function refreshThemeSwatches() {
+            const wrap = document.getElementById('theme-swatches');
+            if (!wrap) return;
+            wrap.innerHTML = '';
+            THEMES.forEach(th => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'theme-swatch' + (th.key === currentColorTheme ? ' active' : '');
+                btn.style.background = th.swatch;
+                btn.title = t(th.label);
+                btn.setAttribute('aria-label', t(th.label));
+                btn.onclick = () => applyColorTheme(th.key);
+                wrap.appendChild(btn);
+            });
+            const lbl = document.getElementById('active-theme-label');
+            if (lbl) {
+                const cur = THEMES.find(th => th.key === currentColorTheme);
+                lbl.textContent = cur ? t(cur.label) : '';
+            }
+        }
+
+        // Rotate the French quote footer (called on lang change & on init)
+        let _quoteIdx = -1;
+        function rotateQuote() {
+            const el = document.getElementById('quote-text');
+            if (!el) return;
+            _quoteIdx = (_quoteIdx + 1) % FRENCH_QUOTES.length;
+            el.textContent = FRENCH_QUOTES[_quoteIdx];
         }
 
         // --- STATE & DATA SETUP ---
@@ -614,7 +1080,7 @@
                         
                         const syncBtn = document.getElementById('sync-btn');
                         if(syncBtn) syncBtn.classList.remove('animate-pulse', 'ring-2', 'ring-emerald-400');
-                        document.getElementById('sync-status').innerText = "Syncing...";
+                        document.getElementById('sync-status').innerText = t('syncing');
                         
                         await syncWithDrive();
                     },
@@ -623,7 +1089,7 @@
                 googleLoadAttempts++;
                 if (googleLoadAttempts > 30) {
                     const spinner = document.getElementById('google-loading-spinner');
-                    if(spinner) spinner.innerHTML = '<span class="text-[11px] text-red-500 font-bold bg-red-50 dark:bg-red-900/30 px-3 py-1.5 rounded-full">Google Login blocked by browser.</span>';
+                    if(spinner) spinner.innerHTML = `<span class="text-[11px] text-red-500 font-bold bg-red-50 dark:bg-red-900/30 px-3 py-1.5 rounded-full">${escapeHtml(t('google_blocked'))}</span>`;
                     return;
                 }
                 setTimeout(checkGoogleLoaded, 100); 
@@ -631,9 +1097,15 @@
         }
 
         window.addEventListener('load', function() {
-            loadVerbsDatabase(); 
+            // Apply persisted color theme as early as possible to avoid a flash
+            applyColorTheme(currentColorTheme);
+            loadVerbsDatabase();
             changeLanguage(currentLang);
             checkGoogleLoaded();
+
+            // Start quote rotation (visible after login)
+            rotateQuote();
+            setInterval(rotateQuote, 18000);
             
             const isLocalLogged = localStorage.getItem('frenmotLoggedIn') === 'true';
             const isSessionLogged = sessionStorage.getItem('frenmotLoggedIn') === 'true';
@@ -657,7 +1129,7 @@
                         // Token expired or new tab. Ask user to click sync instead of forcing a popup.
                         const syncStatus = document.getElementById('sync-status');
                         if(syncStatus) {
-                            syncStatus.innerText = "Click to Sync";
+                            syncStatus.innerText = t('click_to_sync');
                             syncStatus.classList.remove('hidden');
                         }
                         const syncBtn = document.getElementById('sync-btn');
@@ -738,7 +1210,7 @@
         }
 
         function startGoogleSync(manual = false) {
-            if(isOfflineMode) return alert("You are offline. Logout via Settings to connect Google.");
+            if(isOfflineMode) return alert(t('offline_alert'));
             
             if (!tokenClient) {
                 if (window.google && window.google.accounts && window.google.accounts.oauth2) {
@@ -753,13 +1225,13 @@
                             
                             const syncBtn = document.getElementById('sync-btn');
                             if(syncBtn) syncBtn.classList.remove('animate-pulse', 'ring-2', 'ring-emerald-400');
-                            document.getElementById('sync-status').innerText = "Syncing...";
+                            document.getElementById('sync-status').innerText = t('syncing');
                             
                             await syncWithDrive();
                         },
                     });
                 } else {
-                    return alert("Google Script didn't load. Please check your connection or disable ad-blockers.");
+                    return alert(t('google_not_loaded'));
                 }
             }
             
@@ -831,16 +1303,16 @@
                     await uploadToDrive();
                     
                     if (newWordsAdded > 0) {
-                        document.getElementById('sync-status').innerText = `Synced (+${newWordsAdded})`;
+                        document.getElementById('sync-status').innerText = t('synced_count', { n: newWordsAdded });
                     } else {
-                        document.getElementById('sync-status').innerText = "Synced ✓";
+                        document.getElementById('sync-status').innerText = t('synced_ok');
                     }
                 } else {
                     updateHabitTracker(); 
                     await uploadToDrive();
-                    document.getElementById('sync-status').innerText = "Created Backup!";
+                    document.getElementById('sync-status').innerText = t('created_backup');
                 }
-            } catch (err) { document.getElementById('sync-status').innerText = "Sync Error"; }
+            } catch (err) { document.getElementById('sync-status').innerText = t('sync_error'); }
             finally { isSyncing = false; }
         }
 
@@ -863,8 +1335,8 @@
         function saveData() {
             saveDataLocal();
             if(gDriveAccessToken && !isOfflineMode) {
-                document.getElementById('sync-status').innerText = "Saving...";
-                uploadToDrive().then(() => { document.getElementById('sync-status').innerText = "Synced ✓"; });
+                document.getElementById('sync-status').innerText = t('saving');
+                uploadToDrive().then(() => { document.getElementById('sync-status').innerText = t('synced_ok'); });
             }
         }
 
@@ -963,30 +1435,15 @@
             else { if(animationId) cancelAnimationFrame(animationId); }
             
             if(sectionId === 'list') toggleForm('none');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
 
-        function updateUI() {
-            reviewQueue = vocabData.filter(w => w.nextReviewDate <= Date.now());
-            document.getElementById('desktop-due-badge').innerText = reviewQueue.length;
-            document.getElementById('mobile-due-badge').innerText = reviewQueue.length;
-            renderReview(); 
-            renderList();
-            
-            // Set User Display Name Prominently
-            const googleName = localStorage.getItem('frenmotUserName') || sessionStorage.getItem('frenmotUserName');
-            const displayName = appState.customName || googleName;
-            
-            const greetingEl = document.getElementById('user-greeting');
-            if (greetingEl) {
-                if (isOfflineMode) {
-                    greetingEl.innerText = "Offline";
-                } else if (displayName) {
-                    greetingEl.innerText = "👋 " + displayName;
-                } else {
-                    greetingEl.innerText = "";
-                }
+            // Show the French quote footer everywhere except the immersive landing
+            const footer = document.getElementById('quote-footer');
+            if (footer) {
+                if (sectionId === 'landing') footer.classList.add('hidden');
+                else footer.classList.remove('hidden');
             }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function saveCustomName() {
@@ -998,7 +1455,7 @@
             
             // Show save feedback
             const btn = input.nextElementSibling;
-            btn.innerHTML = 'Saved!';
+            btn.innerHTML = escapeHtml(t('name_saved'));
             btn.classList.replace('bg-primary', 'bg-emerald-500');
             setTimeout(() => {
                 btn.innerHTML = '✓';
@@ -1014,11 +1471,12 @@
             const displayName = appState.customName || googleName;
             const settingsUserNameEl = document.getElementById('settings-user-name');
             if (settingsUserNameEl) {
-                settingsUserNameEl.innerText = isOfflineMode ? 'Offline Mode' : (googleName ? `Google Acct: ${googleName}` : '');
+                settingsUserNameEl.innerText = isOfflineMode ? t('offline_label') : (googleName ? `Google: ${googleName}` : '');
             }
-            
-            // Populate editable input
+
+            // Populate editable input + paint theme swatches
             document.getElementById('settings-name-input').value = displayName || '';
+            refreshThemeSwatches();
 
             document.getElementById('def-overlay').classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0', 'pointer-events-none', 'scale-95'); }, 10);
@@ -1043,9 +1501,8 @@
         function renderCalendar() {
             const year = currentCalDate.getFullYear();
             const month = currentCalDate.getMonth();
-            
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            document.getElementById('cal-month-title').innerText = `${monthNames[month]} ${year}`;
+            const monthName = t('month_' + month);
+            document.getElementById('cal-month-title').innerText = `${monthName} ${year}`;
             
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1449,10 +1906,12 @@
                 
                 for (let i = 1; i <= 5; i++) {
                     const intv = i < 3 ? 1 : calculateNextInterval(w, i);
+                    const labelKey = 'star_' + i;
                     container.innerHTML += `
                         <div class="flex flex-col items-center">
-                            <button onclick="processReview(${i}, event)" class="star-btn ${starColors[i-1]} hover:scale-110 active:scale-95" title="Confidence ${i}/5">★</button>
-                            <span class="text-[10px] font-bold text-slate-400 mt-1">+${intv}d</span>
+                            <button onclick="processReview(${i}, event)" class="star-btn ${starColors[i-1]} hover:scale-110 active:scale-95" title="${escapeHtml(t(labelKey))} (${i}/5)">★</button>
+                            <span class="text-[10px] font-bold text-slate-400 mt-1">${escapeHtml(t(labelKey))}</span>
+                            <span class="text-[10px] text-slate-300 dark:text-slate-600">+${intv}${escapeHtml(t('days_short'))}</span>
                         </div>
                     `;
                 }
@@ -1480,9 +1939,9 @@
             document.getElementById('session-complete').classList.remove('hidden');
             const summary = document.getElementById('session-summary');
             if (reviewedCount === drillTotal) {
-                summary.innerText = `You dominated ${reviewedCount} words! Enjoy your newly expanded vocabulary.`;
+                summary.innerText = t('summary_full', { n: reviewedCount });
             } else {
-                summary.innerText = `You practiced ${reviewedCount} words before finishing early. Every bit counts!`;
+                summary.innerText = t('summary_early', { n: reviewedCount });
             }
         }
 
@@ -1509,7 +1968,11 @@
                 const nextWords = [...vocabData].sort((a,b) => a.nextReviewDate - b.nextReviewDate);
                 if(nextWords.length > 0 && nextWords[0].nextReviewDate > Date.now()) {
                     const nextDate = new Date(nextWords[0].nextReviewDate);
-                    document.getElementById('next-due-text').innerText = `Next review: ${nextDate.toLocaleDateString()} at ${nextDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                    const localeTag = currentLang === 'fr' ? 'fr-FR' : 'en-US';
+                    document.getElementById('next-due-text').innerText = t('next_review_at', {
+                        d: nextDate.toLocaleDateString(localeTag),
+                        t: nextDate.toLocaleTimeString(localeTag, {hour: '2-digit', minute:'2-digit'})
+                    });
                 } else {
                     document.getElementById('next-due-text').innerText = '';
                 }
@@ -1527,20 +1990,24 @@
                             <div class="text-slate-500 text-xs italic">${escapeHtml(w.frDef)}</div>
                         </div>
                         <div class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-400">
-                            Rep ${w.repetitions}
+                            ${escapeHtml(t('rep_short'))} ${w.repetitions}
                         </div>
                     </div>
                 `).join('');
             }
             
-            // Build stats
-            let mastered = 0; let newW = 0; let learnW = 0; let famW = 0;
+            // Build stats — clean buckets:
+            //   New      = repetitions === 0
+            //   Learning = 1..3
+            //   Familiar = 4..7
+            //   Mastered = 8+
+            let mastered = 0, newW = 0, learnW = 0, famW = 0;
             vocabData.forEach(w => {
                 const rep = w.repetitions || 0;
-                if(rep === 0) newW++;
-                else if(rep >= 1 && rep <= 3) learnW++;
-                else if(rep >= 4 && rep <= 7) famW++;
-                else { famW++; /* fallback */ if(rep >= 8) { mastered++; famW--; } }
+                if (rep === 0)         newW++;
+                else if (rep <= 3)     learnW++;
+                else if (rep <= 7)     famW++;
+                else                   mastered++;
             });
             
             document.getElementById('stat-due').innerText = reviewQueue.length;
@@ -1550,31 +2017,31 @@
             const total = vocabData.length > 0 ? vocabData.length : 1;
             const bar = document.getElementById('maturity-bar');
             bar.innerHTML = `
-                <div class="maturity-segment bg-red-400" style="width: ${(newW/total)*100}%" title="New: ${newW}"></div>
-                <div class="maturity-segment bg-amber-400" style="width: ${(learnW/total)*100}%" title="Learning: ${learnW}"></div>
-                <div class="maturity-segment bg-sky-400" style="width: ${(famW/total)*100}%" title="Familiar: ${famW}"></div>
-                <div class="maturity-segment bg-emerald-400" style="width: ${(mastered/total)*100}%" title="Mastered: ${mastered}"></div>
+                <div class="maturity-segment bg-red-400" style="width: ${(newW/total)*100}%" title="${escapeHtml(t('new_w'))}: ${newW}"></div>
+                <div class="maturity-segment bg-amber-400" style="width: ${(learnW/total)*100}%" title="${escapeHtml(t('learning_w'))}: ${learnW}"></div>
+                <div class="maturity-segment bg-sky-400" style="width: ${(famW/total)*100}%" title="${escapeHtml(t('familiar_w'))}: ${famW}"></div>
+                <div class="maturity-segment bg-emerald-400" style="width: ${(mastered/total)*100}%" title="${escapeHtml(t('mastered_w'))}: ${mastered}"></div>
             `;
         }
 
-        // Make sure updateUI calls renderReviewDashboard instead of renderReview
+        // Canonical UI update — re-renders dashboard, list, badges, greeting
         function updateUI() {
             reviewQueue = vocabData.filter(w => w.nextReviewDate <= Date.now());
             document.getElementById('desktop-due-badge').innerText = reviewQueue.length;
             document.getElementById('mobile-due-badge').innerText = reviewQueue.length;
-            renderReviewDashboard(); 
+            renderReviewDashboard();
             renderList();
-            
-            // Set User Display Name Prominently
+
+            // Set user display name in nav
             const googleName = localStorage.getItem('frenmotUserName') || sessionStorage.getItem('frenmotUserName');
             const displayName = appState.customName || googleName;
-            
+
             const greetingEl = document.getElementById('user-greeting');
             if (greetingEl) {
                 if (isOfflineMode) {
-                    greetingEl.innerText = "Offline";
+                    greetingEl.innerText = t('offline_label');
                 } else if (displayName) {
-                    greetingEl.innerText = "👋 " + displayName;
+                    greetingEl.innerText = t('hello_user', { name: displayName });
                 } else {
                     greetingEl.innerText = "";
                 }
@@ -1601,47 +2068,56 @@
             const grid = document.getElementById('word-grid'); 
             if (!grid) return;
             grid.innerHTML = '';
+            const localeTag = currentLang === 'fr' ? 'fr-FR' : 'en-US';
             [...vocabData].sort((a,b) => b.id - a.id).forEach(w => {
-                grid.innerHTML += `<div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 p-6 rounded-3xl shadow-sm hover:shadow-md transition relative group">
-                    <button onclick="deleteWord(${w.id})" class="absolute top-4 right-4 text-red-400 hover:text-red-600 transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                    <h3 class="font-bold text-xl text-primary mb-2 pr-8 break-words">${escapeHtml(w.word)}</h3>
+                grid.innerHTML += `<div class="bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 p-6 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all relative group">
+                    <button onclick="deleteWord(${w.id})" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 transition opacity-60 group-hover:opacity-100" title="${escapeHtml(t('delete_word_title'))}"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <h3 class="font-display font-bold text-xl text-primary mb-2 pr-8 break-words">${escapeHtml(w.word)}</h3>
                     <p class="text-slate-700 dark:text-slate-300 italic mb-1 text-[0.95rem]">${escapeHtml(w.frDef)}</p>
                     <p class="text-slate-500 dark:text-slate-400 text-sm">${escapeHtml(w.enDef)}</p>
                     <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-400 font-medium">
-                        <span>Due: ${new Date(w.nextReviewDate).toLocaleDateString()}</span>
-                        <button onclick="resetWordProgress(${w.id})" class="hover:text-primary transition" title="Reset Progress">↻ Reset</button>
+                        <span>${escapeHtml(t('due_label'))}: ${new Date(w.nextReviewDate).toLocaleDateString(localeTag)}</span>
+                        <button onclick="resetWordProgress(${w.id})" class="hover:text-primary transition" title="${escapeHtml(t('reset_progress_title'))}">↻ ${escapeHtml(t('reset_short'))}</button>
                     </div>
                 </div>`;
             });
         }
 
-        function deleteWord(id) { if(confirm("Delete this word?")) { vocabData = vocabData.filter(w => w.id !== id); saveData(); updateUI(); } }
+        function deleteWord(id) { if(confirm(t('confirm_delete'))) { vocabData = vocabData.filter(w => w.id !== id); saveData(); updateUI(); } }
         function resetWordProgress(id) { 
             let w = vocabData.find(w => w.id === id); 
-            if(w) { w.repetitions = 0; w.interval = 0; w.easeFactor = 2.5; w.nextReviewDate = Date.now(); saveData(); updateUI(); alert("Progress reset! It is now in your review queue."); }
+            if(w) { w.repetitions = 0; w.interval = 0; w.easeFactor = 2.5; w.nextReviewDate = Date.now(); saveData(); updateUI(); alert(t('reset_done')); }
         }
 
         function handleSearch() {
             const query = removeAccents(document.getElementById('search-input').value);
             const cards = document.getElementById('word-grid').children;
+            let visible = 0;
             for(let i=0; i < cards.length; i++) {
                 const text = removeAccents(cards[i].innerText);
-                cards[i].style.display = text.includes(query) ? "" : "none";
+                const match = text.includes(query);
+                cards[i].style.display = match ? "" : "none";
+                if (match) visible++;
+            }
+            const empty = document.getElementById('empty-vocab');
+            if (empty) {
+                if (cards.length > 0 && visible === 0) empty.classList.remove('hidden');
+                else empty.classList.add('hidden');
             }
         }
 
         async function autoTranslate() {
             const wIn = document.getElementById('add-w'), enIn = document.getElementById('add-en');
-            if(!wIn.value) return alert("Type a word first!");
-            enIn.value = "Translating...";
+            if(!wIn.value) return alert(t('no_word_typed'));
+            enIn.value = t('translating');
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
                 const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(wIn.value)}&langpair=fr|en`, { signal: controller.signal });
                 clearTimeout(timeoutId);
                 const data = await res.json();
-                enIn.value = data.responseData?.translatedText || "Translation unavailable";
-            } catch(e) { enIn.value = e.name === 'AbortError' ? "Timed out" : ""; }
+                enIn.value = data.responseData?.translatedText || t('translation_unavail');
+            } catch(e) { enIn.value = e.name === 'AbortError' ? t('translate_timeout') : ""; }
         }
 
         function toggleForm(id) { document.getElementById('manual-form').classList.add('hidden'); document.getElementById('import-form').classList.add('hidden'); if(id !== 'none') document.getElementById(id).classList.remove('hidden'); }
@@ -1650,7 +2126,7 @@
         function addManualWord(e) {
             e.preventDefault();
             const w = document.getElementById('add-w').value.trim(), f = document.getElementById('add-fr').value.trim(), en = document.getElementById('add-en').value.trim();
-            if (vocabData.some(x => removeAccents(x.word) === removeAccents(w))) return alert(`"${w}" exists!`);
+            if (vocabData.some(x => removeAccents(x.word) === removeAccents(w))) return alert(t('word_exists', { w }));
             vocabData.push(createWordObject(w, f, en)); saveData(); e.target.reset(); toggleForm('none'); updateUI();
         }
 
@@ -1664,8 +2140,8 @@
                     if (!vocabData.some(x => removeAccents(x.word) === removeAccents(cw))) { vocabData.push(createWordObject(cw, item.easy_french.trim(), item.english.trim())); added++; }
                 });
                 if (added > 0) { saveData(); updateUI(); }
-                document.getElementById('import-data').value = ''; toggleForm('none'); alert(`Imported ${added} new words!`);
-            } catch (err) { alert("Invalid JSON format."); }
+                document.getElementById('import-data').value = ''; toggleForm('none'); alert(t('imported_count', { n: added }));
+            } catch (err) { alert(t('invalid_json')); }
         }
         
         let resizeTimer;
@@ -1676,13 +2152,7 @@
             }, 250);
         });
 
-        // --- INITIALIZATION ---
-        window.addEventListener('load', () => {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            if (!loadingOverlay) return;
-            setTimeout(() => { loadingOverlay.classList.add('opacity-0', 'pointer-events-none'); }, 500);
-            setTimeout(() => { loadingOverlay.remove(); }, 1200);
-        });
+        // --- INITIALIZATION (cleanup of legacy hooks happens in the main load handler above) ---
     </script>
 </body>
 </html>
