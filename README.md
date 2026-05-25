@@ -47,8 +47,8 @@ Instead of adding words one by one, you can paste an entire French article into 
 ### 🎯 Interactive Physics UI
 The Explore page renders your vocabulary as floating, bouncing word bubbles in a **2D physics simulation** with collision detection. Tap any word to see its definition. It's a playful way to passively absorb your vocabulary while browsing. The engine caps DOM elements dynamically based on viewport size and uses `requestAnimationFrame` with proper cleanup to stay smooth on mobile.
 
-### 🌙 Dark Mode & i18n
-Full dark theme support and English/French UI localization. Because I use this app at night too.
+### 🌙 Dark Mode, Themes & i18n
+A complete dark theme, **six aesthetic color palettes** swappable from settings (Lavande, Bordeaux, Émeraude, Soleil, Azur, Café), and end-to-end English ↔ French UI localization (every label, dashboard, dialog, alert and dynamically-rendered card flows through a single `t()` translator). Switching language re-renders all dynamic content live.
 
 ---
 
