@@ -8,8 +8,6 @@
 (function (global) {
   'use strict';
 
-  /** Convert OpenAI-style messages into a single string for providers
-      without role messages. */
   function flattenMessages(messages) {
     return messages.map(m => {
       if (m.role === 'system') return `[SYSTEM]\n${m.content}\n`;
@@ -45,8 +43,7 @@
     async chat({ key, model, baseUrl, messages, signal, temperature = 0.4 }) {
       const url = (baseUrl || this.defaultBaseUrl).replace(/\/+$/, '') + '/chat/completions';
       const res = await fetch(url, {
-        method: 'POST',
-        signal,
+        method: 'POST', signal,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${key}`
@@ -78,14 +75,26 @@
     color: '#4285f4',
     initials: 'GG',
     docs: 'https://aistudio.google.com/app/apikey',
-    description: 'Gemini 1.5 family. Long-context multimodal models from Google.',
+    description: 'Gemini family. Long-context multimodal models from Google.',
     keyHint: 'AIza…',
     defaultBaseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    defaultModel: 'gemini-1.5-flash',
-    models: ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-2.0-flash'],
+    defaultModel: 'gemini-2.0-flash',
+    models: [
+      'gemini-2.5-flash',
+      'gemini-2.5-pro',
+      'gemini-2.0-flash',
+      'gemini-2.0-flash-lite',
+      'gemini-2.0-pro-exp',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-pro-latest'
+    ],
+    fallbackChain: [
+      'gemini-2.0-flash',
+      'gemini-2.5-flash',
+      'gemini-1.5-flash-latest'
+    ],
 
     _toGeminiContents(messages) {
-      // Gemini uses { contents: [{ role, parts:[{text}] }] } and a system_instruction
       const sys = messages.filter(m => m.role === 'system').map(m => m.content).join('\n\n');
       const turns = messages.filter(m => m.role !== 'system').map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
@@ -94,17 +103,17 @@
       return { sys, contents: turns };
     },
 
-    async chat({ key, model, baseUrl, messages, signal, temperature = 0.4 }) {
-      const m = model || this.defaultModel;
-      const url = (baseUrl || this.defaultBaseUrl).replace(/\/+$/, '') +
-        `/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(key)}`;
-      const { sys, contents } = this._toGeminiContents(messages);
-      const body = {
-        contents,
-        generationConfig: { temperature }
-      };
-      if (sys) body.systemInstruction = { role: 'system', parts: [{ text: sys }] };
+    _isModelNotFoundError(message) {
+      if (!message) return false;
+      const m = String(message).toLowerCase();
+      return m.includes('not found') ||
+             m.includes('not supported for generatecontent') ||
+             m.includes('is not supported');
+    },
 
+    async _callOnce({ key, model, baseUrl, body, signal }) {
+      const url = (baseUrl || this.defaultBaseUrl).replace(/\/+$/, '') +
+        `/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
       const res = await fetch(url, {
         method: 'POST', signal,
         headers: { 'Content-Type': 'application/json' },
@@ -116,12 +125,60 @@
       return { content, raw: data };
     },
 
+    async chat({ key, model, baseUrl, messages, signal, temperature = 0.4 }) {
+      const initialModel = model || this.defaultModel;
+      const { sys, contents } = this._toGeminiContents(messages);
+      const body = { contents, generationConfig: { temperature } };
+      if (sys) body.systemInstruction = { role: 'system', parts: [{ text: sys }] };
+
+      const tried = new Set();
+      const candidates = [initialModel, ...this.fallbackChain].filter(m => {
+        if (!m || tried.has(m)) return false;
+        tried.add(m);
+        return true;
+      });
+      let lastErr = null;
+      for (const m of candidates) {
+        try {
+          return await this._callOnce({ key, model: m, baseUrl, body, signal });
+        } catch (err) {
+          lastErr = err;
+          if (!this._isModelNotFoundError(err.message)) throw err;
+        }
+      }
+      throw new Error('No supported Gemini model available for this API key. ' +
+        'Tried: ' + candidates.join(', ') + (lastErr ? '. Last error: ' + lastErr.message : ''));
+    },
+
+    /** List models available to this API key, filtered to those that
+        support `generateContent`. */
+    async listModels({ key, baseUrl }) {
+      if (!key) throw new Error('Missing API key.');
+      const url = (baseUrl || this.defaultBaseUrl).replace(/\/+$/, '') +
+        `/models?key=${encodeURIComponent(key)}&pageSize=200`;
+      const res = await fetch(url);
+      const data = await readJsonOrThrow(res);
+      const models = Array.isArray(data?.models) ? data.models : [];
+      return models
+        .filter(m => Array.isArray(m.supportedGenerationMethods)
+          ? m.supportedGenerationMethods.includes('generateContent')
+          : true)
+        .map(m => (m.name || '').replace(/^models\//, ''))
+        .filter(Boolean);
+    },
+
     async testKey({ key, model, baseUrl }) {
       try {
         const r = await this.chat({ key, model, baseUrl,
           messages: [{ role: 'user', content: 'Reply with the single word: ok' }] });
         return { ok: true, message: 'Connected. Sample reply: ' + (r.content || '').slice(0, 40) };
-      } catch (e) { return { ok: false, message: e.message }; }
+      } catch (e) {
+        const m = e.message || '';
+        if (/api key not valid|invalid api key|403/i.test(m)) {
+          return { ok: false, message: 'Invalid API key for Google Gemini.' };
+        }
+        return { ok: false, message: m };
+      }
     }
   };
 
@@ -142,7 +199,7 @@
     async testKey(opts) { return openai.testKey.call(this, opts); }
   };
 
-  /* ---------- NVIDIA NIM (OpenAI-compatible) ---------- */
+  /* ---------- NVIDIA NIM ---------- */
   const nvidia = {
     id: 'nvidia',
     name: 'NVIDIA',

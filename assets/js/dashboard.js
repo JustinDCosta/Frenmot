@@ -3,7 +3,7 @@
    ================================================================= */
 (function (global) {
   'use strict';
-  const { el, icons, formatDate, formatRelative } = global.U;
+  const { el, icons } = global.U;
 
   const Dashboard = {
     renderView(container) {
@@ -11,7 +11,6 @@
       const s = global.State.S;
       const wrap = el('section', { class: 'view' });
 
-      // Header
       const greeting = greet(s.user?.name);
       const header = el('div', { class:'view-header' });
       header.appendChild(el('div', { class:'flex-1' },
@@ -21,25 +20,24 @@
       ));
       const actions = el('div', { class:'actions' });
       const start = el('a', { class:'btn btn-primary', href:'#/review' });
-      start.innerHTML = icons.play + '<span>Start review</span>';
+      start.innerHTML = icons.play + '<span>' + global.U.escapeHtml(t('dashboard.startReview')) + '</span>';
       const add = el('button', { class:'btn btn-outline' });
-      add.innerHTML = icons.plus + '<span>Add word</span>';
+      add.innerHTML = icons.plus + '<span>' + global.U.escapeHtml(t('dashboard.addWord')) + '</span>';
       add.addEventListener('click', () => global.Vocab.openWordModal());
       actions.appendChild(start);
       actions.appendChild(add);
       header.appendChild(actions);
       wrap.appendChild(header);
 
-      // Stat grid
       const summary = global.SRS.summary(s.vocab);
       const stats = el('div', { class:'stat-grid mb-20' });
       const items = [
-        { label:'Total words',    value: summary.total,     icon: icons.book },
-        { label:'Due today',      value: summary.due,       icon: icons.target },
-        { label:'Mastered',       value: summary.mastered,  icon: icons.star },
-        { label:'Weak',           value: summary.weak,      icon: icons.flame },
-        { label:'Streak',         value: `${s.review.streak} day${s.review.streak === 1 ? '' : 's'}`, icon: icons.flame },
-        { label:'Accuracy',       value: `${summary.accuracy}%`, icon: icons.sparkle }
+        { label: t('dashboard.totalWords'),   value: summary.total,     icon: icons.book },
+        { label: t('dashboard.dueToday'),     value: summary.due,       icon: icons.target },
+        { label: t('dashboard.mastered'),     value: summary.mastered,  icon: icons.star },
+        { label: t('dashboard.weak'),         value: summary.weak,      icon: icons.flame },
+        { label: t('dashboard.streak'),       value: t('common.days', { n: s.review.streak }), icon: icons.flame },
+        { label: t('dashboard.accuracy'),     value: `${summary.accuracy}%`, icon: icons.sparkle }
       ];
       items.forEach(it => {
         const card = el('div', { class:'stat-card' });
@@ -50,19 +48,16 @@
       });
       wrap.appendChild(stats);
 
-      // Two-column row: weekly progress + AI status / PDFs
       const row = el('div', { class:'stat-grid', style:{ gridTemplateColumns:'2fr 1fr', gap:'14px' } });
       row.appendChild(buildWeeklyCard());
       row.appendChild(buildAICard());
       wrap.appendChild(row);
 
-      // Recent activity grid
       const row2 = el('div', { class:'stat-grid mt-16', style:{ gridTemplateColumns:'1fr 1fr', gap:'14px' } });
       row2.appendChild(buildRecentVocabCard());
       row2.appendChild(buildRecentPdfsCard());
       wrap.appendChild(row2);
 
-      // Mobile: collapse 2-col rows by widening grid
       if (window.innerWidth < 720) {
         row.style.gridTemplateColumns = '1fr';
         row2.style.gridTemplateColumns = '1fr';
@@ -82,17 +77,17 @@
   }
   function motivationLine(s) {
     const due = global.SRS.summary(s.vocab).due;
-    if (due === 0) return 'Nothing due — great time to add new vocabulary or chat with the tutor.';
-    if (due < 5)   return `${due} words ready for review. A quick session keeps the streak alive.`;
-    if (due < 20)  return `${due} words due. Settle in for a focused round.`;
-    return `${due} due — let's whittle them down together.`;
+    if (due === 0) return t('dashboard.motivation.none');
+    if (due < 5)   return t('dashboard.motivation.few',  { n: due });
+    if (due < 20)  return t('dashboard.motivation.some', { n: due });
+    return            t('dashboard.motivation.many', { n: due });
   }
 
   function buildWeeklyCard() {
     const card = el('div', { class:'card' });
     card.appendChild(el('div', { class:'section-title' },
-      el('h2', {}, 'Weekly progress'),
-      el('span', { class:'badge' }, 'last 7 days')
+      el('h2', {}, t('dashboard.weekly')),
+      el('span', { class:'badge' }, t('dashboard.last7'))
     ));
 
     const wh = global.State.S.stats.weekHistory;
@@ -133,7 +128,7 @@
       el('div', { style:{ fontWeight:700, fontSize:'18px' } }, String(total))
     ));
     stats.appendChild(el('div', { class:'col' },
-      el('div', { class:'text-xs muted' }, 'Accuracy'),
+      el('div', { class:'text-xs muted' }, t('dashboard.accuracy')),
       el('div', { style:{ fontWeight:700, fontSize:'18px' } }, total ? `${Math.round(correct/total*100)}%` : '—')
     ));
     stats.appendChild(el('div', { class:'col' },
@@ -148,8 +143,9 @@
     const card = el('div', { class:'card' });
     const active = global.AI.getActive();
     card.appendChild(el('div', { class:'section-title' },
-      el('h2', {}, 'AI status'),
-      el('span', { class:`badge ${active ? 'badge-success' : 'badge-warning'}` }, active ? 'Connected' : 'Not connected')
+      el('h2', {}, t('dashboard.aiStatus')),
+      el('span', { class:`badge ${active ? 'badge-success' : 'badge-warning'}` },
+        active ? t('common.connected') : t('common.notConnected'))
     ));
     if (active) {
       card.appendChild(el('div', { class:'row gap-8 mb-8' },
@@ -161,14 +157,14 @@
       ));
       const row = el('div', { class:'row gap-8' });
       const a = el('a', { class:'btn btn-secondary btn-sm', href:'#/chat' });
-      a.innerHTML = global.U.icons.chat + '<span>Open tutor</span>';
-      const b = el('a', { class:'btn btn-outline btn-sm', href:'#/settings' }, 'Manage');
+      a.innerHTML = global.U.icons.chat + '<span>' + global.U.escapeHtml(t('dashboard.openTutor')) + '</span>';
+      const b = el('a', { class:'btn btn-outline btn-sm', href:'#/settings' }, t('dashboard.manage'));
       row.appendChild(a); row.appendChild(b);
       card.appendChild(row);
     } else {
       card.appendChild(el('p', { class:'muted text-sm' }, 'Connect an OpenAI, Gemini, Groq, or NVIDIA key to unlock AI features: chat tutor, translations, vocabulary enhancement, and PDF Q&A.'));
       const a = el('a', { class:'btn btn-primary btn-sm', href:'#/settings' });
-      a.innerHTML = global.U.icons.settings + '<span>Connect provider</span>';
+      a.innerHTML = global.U.icons.settings + '<span>' + global.U.escapeHtml(t('dashboard.connectProvider')) + '</span>';
       card.appendChild(a);
     }
     return card;
@@ -177,12 +173,12 @@
   function buildRecentVocabCard() {
     const card = el('div', { class:'card' });
     card.appendChild(el('div', { class:'section-title' },
-      el('h2', {}, 'Recently added'),
-      el('a', { class:'text-sm', href:'#/vocabulary' }, 'View all')
+      el('h2', {}, t('dashboard.recentlyAdded')),
+      el('a', { class:'text-sm', href:'#/vocabulary' }, t('dashboard.viewAll'))
     ));
     const recent = (global.State.S.vocab || []).slice(0, 5);
     if (!recent.length) {
-      card.appendChild(el('p', { class:'muted text-sm' }, 'No words yet.'));
+      card.appendChild(el('p', { class:'muted text-sm' }, t('dashboard.noWordsYet')));
       return card;
     }
     const list = el('div', { class:'col gap-8' });
@@ -202,14 +198,14 @@
   function buildRecentPdfsCard() {
     const card = el('div', { class:'card' });
     card.appendChild(el('div', { class:'section-title' },
-      el('h2', {}, 'PDFs'),
-      el('a', { class:'text-sm', href:'#/pdf' }, 'Open library')
+      el('h2', {}, t('dashboard.pdfs')),
+      el('a', { class:'text-sm', href:'#/pdf' }, t('dashboard.openLibrary'))
     ));
     const pdfs = (global.State.S.pdfs || []).slice(0, 5);
     if (!pdfs.length) {
-      card.appendChild(el('p', { class:'muted text-sm' }, 'No documents yet — upload a PDF to learn from it.'));
+      card.appendChild(el('p', { class:'muted text-sm' }, t('dashboard.noPdfYet')));
       const a = el('a', { class:'btn btn-secondary btn-sm', href:'#/pdf' });
-      a.innerHTML = global.U.icons.upload + '<span>Upload PDF</span>';
+      a.innerHTML = global.U.icons.upload + '<span>' + global.U.escapeHtml(t('dashboard.uploadPdf')) + '</span>';
       card.appendChild(a);
       return card;
     }

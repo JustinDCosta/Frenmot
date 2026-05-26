@@ -20,16 +20,16 @@
 
       const header = el('div', { class: 'view-header' });
       header.appendChild(el('div', { class: 'flex-1' },
-        el('h1', {}, 'AI Tutor'),
-        el('p', { class: 'subtitle muted' }, 'Ask anything about words, grammar, conjugations, or your saved vocabulary.')
+        el('h1', {}, t('chat.title')),
+        el('p', { class: 'subtitle muted' }, t('chat.subtitle'))
       ));
       const actions = el('div', { class: 'actions' });
       const clearBtn = el('button', { class:'btn btn-ghost' });
-      clearBtn.innerHTML = icons.trash + '<span>Clear chat</span>';
+      clearBtn.innerHTML = icons.trash + '<span>' + escapeHtml(t('chat.clearChat')) + '</span>';
       clearBtn.addEventListener('click', () => {
         global.State.update(s => { s.chat.messages = []; });
         renderMessages();
-        toast('Chat cleared', 'success');
+        toast(t('chat.cleared'), 'success');
       });
       actions.appendChild(clearBtn);
       header.appendChild(actions);
@@ -38,7 +38,7 @@
       const shell = el('div', { class: 'chat-shell' });
       const messagesEl = el('div', { class: 'chat-messages', id: 'chat-messages' });
       const composer = el('div', { class: 'chat-composer' });
-      const ta = el('textarea', { placeholder:'Ask a question or give an instruction…', rows:'1' });
+      const ta = el('textarea', { placeholder: t('chat.placeholder'), rows:'1', class:'accent-aware' });
       ta.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
       });
@@ -74,7 +74,7 @@
         const text = ta.value.trim();
         if (!text) return;
         if (!global.AI.isReady()) {
-          toast('Connect an AI provider in Settings first.', 'warning');
+          toast(t('chat.connectFirst'), 'warning');
           return;
         }
         ta.value = ''; ta.style.height = 'auto';
@@ -137,8 +137,8 @@
   function buildEmpty(sendCb) {
     const wrap = el('div', { class: 'chat-empty' });
     wrap.appendChild(el('div', { class: 'pulse', html: icons.bot }));
-    wrap.appendChild(el('h2', {}, 'Your AI language tutor'));
-    wrap.appendChild(el('p', { class: 'muted' }, 'Ask about a word, request examples, conjugate a verb, or quiz yourself on saved vocabulary.'));
+    wrap.appendChild(el('h2', {}, t('chat.empty.title')));
+    wrap.appendChild(el('p', { class: 'muted' }, t('chat.empty.body')));
     const grid = el('div', { class: 'suggested-grid' });
     [
       'What does "flâner" mean?',
@@ -147,11 +147,11 @@
       'Add the word "ravissant" to my vocabulary.',
       'Explain the difference between "savoir" and "connaître".',
       'Quiz me on my weak words.'
-    ].forEach(t => {
-      const c = el('button', { class: 'suggested-chip' }, t);
+    ].forEach(text => {
+      const c = el('button', { class: 'suggested-chip' }, text);
       c.addEventListener('click', () => {
         const ta = $('.chat-composer textarea');
-        if (ta) { ta.value = t; ta.focus(); }
+        if (ta) { ta.value = text; ta.focus(); }
       });
       grid.appendChild(c);
     });
@@ -240,8 +240,7 @@
         return { ok: true, label: `Updated word.` };
       }
       if (action.action === 'start_quiz') {
-        // navigate to learn with quiz mode
-        window.location.hash = `#/learn?mode=quiz&filter=${encodeURIComponent(action.filter || 'due')}`;
+        global.App.navigateTo('learn', { mode: 'quiz', filter: action.filter || 'due' });
         return { ok: true, label: 'Starting quiz…' };
       }
     } catch (e) {

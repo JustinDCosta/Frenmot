@@ -8,7 +8,19 @@
    ================================================================= */
 (function (global) {
   'use strict';
-  const { deobfuscate, obfuscate, toast } = global.U;
+  const { deobfuscate, obfuscate } = global.U;
+
+  /** Strip anything that looks like an API key from a string before logging. */
+  function sanitize(s) {
+    if (!s) return '';
+    return String(s)
+      .replace(/key=[^&\s]+/gi, 'key=REDACTED')
+      .replace(/sk-[A-Za-z0-9-_]{8,}/g, 'sk-REDACTED')
+      .replace(/AIza[0-9A-Za-z\-_]{20,}/g, 'AIzaREDACTED')
+      .replace(/gsk_[A-Za-z0-9]{8,}/g, 'gsk_REDACTED')
+      .replace(/nvapi-[A-Za-z0-9]{8,}/g, 'nvapi-REDACTED')
+      .replace(/Bearer\s+[A-Za-z0-9\-_.]+/gi, 'Bearer REDACTED');
+  }
 
   const AI = {
     /** Return list of providers with status for Settings UI */
@@ -46,7 +58,6 @@
 
     isReady() { return !!this.getActive(); },
 
-    /** Save / clear key for a given provider */
     saveKey(providerId, key) {
       global.State.update(s => {
         const p = s.settings.providers[providerId] = s.settings.providers[providerId] || {};
@@ -72,7 +83,6 @@
       global.State.set('settings.defaultProvider', providerId);
     },
 
-    /** Test a provider's key */
     async testProvider(providerId) {
       const settings = global.State.S.settings;
       const def = global.AIProviders.byId(providerId);
@@ -81,6 +91,25 @@
       const key = deobfuscate(cfg.keyEnc || '');
       if (!key) return { ok: false, message: 'No key saved' };
       return def.testKey({ key, model: cfg.model, baseUrl: cfg.baseUrl });
+    },
+
+    /** List models supported by the saved key for a provider. Currently
+        implemented for Gemini; other providers return their static list. */
+    async listProviderModels(providerId) {
+      const settings = global.State.S.settings;
+      const def = global.AIProviders.byId(providerId);
+      if (!def) return [];
+      const cfg = settings.providers[providerId] || {};
+      const key = deobfuscate(cfg.keyEnc || '');
+      if (typeof def.listModels === 'function' && key) {
+        try {
+          const live = await def.listModels({ key, baseUrl: cfg.baseUrl });
+          if (Array.isArray(live) && live.length) return live;
+        } catch (e) {
+          console.warn('[AI] listModels failed for', providerId, '-', sanitize(e.message));
+        }
+      }
+      return def.models || [];
     },
 
     /** Core chat call routed through active provider with fallbacks */
@@ -92,7 +121,6 @@
         throw err;
       }
 
-      // Optional server proxy (kept generic)
       const proxy = global.State.S.settings.proxy;
       if (proxy?.enabled && proxy.url) {
         try {
@@ -109,12 +137,10 @@
           if (!res.ok) throw new Error(data?.error || `Proxy error ${res.status}`);
           return { content: data.content || '', raw: data, provider: active.id };
         } catch (e) {
-          // Fall through to direct call if proxy fails
-          console.warn('[AI] proxy failed, falling back to direct:', e.message);
+          console.warn('[AI] proxy failed, falling back to direct:', sanitize(e.message));
         }
       }
 
-      // Direct call
       const r = await active.def.chat({
         key: active.key,
         model: active.model,
@@ -133,7 +159,6 @@
         { role: 'system', content: 'Respond with valid JSON only — no prose, no markdown fences.' }
       ], opts);
       const txt = (r.content || '').trim();
-      // Strip code fences if model included them
       const cleaned = txt
         .replace(/^```(?:json)?\s*/i, '')
         .replace(/```$/i, '')
@@ -141,10 +166,9 @@
       try {
         return { ...r, json: JSON.parse(cleaned) };
       } catch {
-        // Try to find first {...} or [...] block
         const m = cleaned.match(/[\[{][\s\S]*[\]}]/);
         if (m) {
-          try { return { ...r, json: JSON.parse(m[0]) }; } catch { /* fallthrough */ }
+          try { return { ...r, json: JSON.parse(m[0]) }; } catch {}
         }
         const err = new Error('AI did not return valid JSON.');
         err.raw = r.content;

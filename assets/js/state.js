@@ -1,12 +1,12 @@
 /* =================================================================
    State — central application state with versioned schema and
-   automatic persistence to localStorage.
+   automatic persistence (localStorage + IndexedDB mirror via U.storage).
    ================================================================= */
 (function (global) {
   'use strict';
   const { storage, bus } = global.U;
 
-  const SCHEMA_VERSION = 1;
+  const SCHEMA_VERSION = 2;
 
   const DEFAULT_STATE = {
     version: SCHEMA_VERSION,
@@ -16,10 +16,11 @@
       accent: 'indigo',        // indigo | rose | emerald | amber | sky | violet
       sourceLang: 'en',
       targetLang: 'fr',
+      uiLang: 'en',            // 'en' | 'fr' — interface language (i18n)
       defaultProvider: null,   // 'openai' | 'gemini' | 'groq' | 'nvidia'
       providers: {             // per-provider config (key obfuscated)
         openai: { keyEnc: '', model: 'gpt-4o-mini', baseUrl: '' },
-        gemini: { keyEnc: '', model: 'gemini-1.5-flash', baseUrl: '' },
+        gemini: { keyEnc: '', model: 'gemini-2.0-flash', baseUrl: '' },
         groq:   { keyEnc: '', model: 'llama-3.3-70b-versatile', baseUrl: '' },
         nvidia: { keyEnc: '', model: 'meta/llama-3.1-70b-instruct', baseUrl: '' }
       },
@@ -42,6 +43,9 @@
     },
     vocab: [],          // [Word]
     pdfs: [],           // [{id, name, addedAt, text, summary, pages}]
+    /** User-saved PDF summaries (explicit "Save" button click).
+     *  [{ id, docId, docName, content, savedAt, lang? }] */
+    savedSummaries: [],
     chat: {
       messages: []      // [{id, role, content, ts, action?}]
     },
@@ -89,8 +93,27 @@
 
   function migrate(loaded) {
     if (!loaded || typeof loaded !== 'object') return JSON.parse(JSON.stringify(DEFAULT_STATE));
-    if ((loaded.version || 0) < SCHEMA_VERSION) {
-      // Future migrations go here; for now, just merge defaults
+    const v = loaded.version || 0;
+    // v1 -> v2: introduce settings.uiLang, savedSummaries[], refresh outdated Gemini default
+    if (v < 2) {
+      loaded.settings = loaded.settings || {};
+      if (!loaded.settings.uiLang) loaded.settings.uiLang = 'en';
+      if (!Array.isArray(loaded.savedSummaries)) loaded.savedSummaries = [];
+      // Best-effort: clear stale gemini-1.5-* default so the AI service picks a current one.
+      const g = loaded.settings.providers && loaded.settings.providers.gemini;
+      if (g && /^gemini-1\.5-/.test(g.model || '')) g.model = 'gemini-2.0-flash';
+      // Drop any legacy settings.sync key that may exist from earlier installs
+      if (loaded.settings.sync) delete loaded.settings.sync;
+      loaded.version = 2;
+    }
+    // Backward-compatible word-shape touch-ups (older words may not have pos)
+    if (Array.isArray(loaded.vocab)) {
+      loaded.vocab.forEach(w => {
+        if (w && typeof w === 'object') {
+          if (typeof w.pos !== 'string') w.pos = '';
+          if (!Array.isArray(w.tags)) w.tags = [];
+        }
+      });
     }
     return mergeDefaults(loaded, DEFAULT_STATE);
   }
@@ -110,8 +133,8 @@
     if (saveTimer) {
       clearTimeout(saveTimer);
       saveTimer = null;
-      try { storage.set('state', S); } catch {}
     }
+    try { storage.set('state', S); } catch {}
   }
 
   function load() {
@@ -179,6 +202,7 @@
       if (!parsed || typeof parsed !== 'object') throw new Error('Invalid state object.');
       S = migrate(parsed);
       persist();
+      flush();
       bus.emit('state:reset');
     }
   };

@@ -4,7 +4,7 @@
    ================================================================= */
 (function (global) {
   'use strict';
-  const { $, $$, uuid, toast, bus } = global.U;
+  const { uuid, bus } = global.U;
 
   const Auth = {
     isLoggedIn() { return !!global.State.S.user; },
@@ -33,11 +33,8 @@
       try {
         global.State.update(s => {
           s.user = null;
-          // Drop tutor chat history so a different user on the same
-          // device doesn't see the previous conversation.
           if (s.chat) s.chat.messages = [];
         });
-        // Force the pending debounced write to disk right now.
         if (typeof global.State.flush === 'function') global.State.flush();
         bus.emit('auth:logout');
         return true;

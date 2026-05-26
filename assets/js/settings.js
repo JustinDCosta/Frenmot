@@ -20,7 +20,7 @@
   function renderGeneral() {
     const s = global.State.S;
     const card = el('div', { class:'card' });
-    card.appendChild(el('div', { class:'section-title' }, el('h2', {}, 'Account & Appearance')));
+    card.appendChild(el('div', { class:'section-title' }, el('h2', {}, t('settings.account'))));
 
     const u = s.user || {};
     const profileRow = el('div', { class:'row gap-12 mb-16', style:{ alignItems:'center' } });
@@ -33,25 +33,35 @@
 
     const nameInput = el('input', { type:'text', value: u.name || '' });
     nameInput.addEventListener('change', () => { global.Auth.update({ name: nameInput.value.trim() || u.name }); toast('Name updated', 'success'); });
-    card.appendChild(field('Display name', nameInput));
+    card.appendChild(field(t('auth.displayName'), nameInput));
 
     const emailInput = el('input', { type:'email', value: u.email || '', placeholder:'you@example.com' });
     emailInput.addEventListener('change', () => global.Auth.update({ email: emailInput.value.trim() }));
-    card.appendChild(field('Email (optional)', emailInput));
+    card.appendChild(field(t('auth.email') + ' (' + t('common.optional') + ')', emailInput));
 
     const langSelect = el('select', {});
     [['fr','French'],['es','Spanish'],['de','German'],['it','Italian'],['pt','Portuguese'],['ja','Japanese'],['ko','Korean'],['zh','Chinese']]
       .forEach(([v,l]) => { const o = el('option', { value: v }, l); if ((s.settings.targetLang || u.targetLang) === v) o.selected = true; langSelect.appendChild(o); });
     langSelect.addEventListener('change', () => { global.State.set('settings.targetLang', langSelect.value); global.Auth.update({ targetLang: langSelect.value }); toast('Language updated', 'success'); });
-    card.appendChild(field('Target language', langSelect, 'Used for translations, conjugation, and TTS.'));
+    card.appendChild(field(t('auth.targetLang'), langSelect, 'Used for translations, conjugation, and TTS.'));
+
+    // UI/Interface language
+    const uiLangSelect = el('select', {});
+    [['en','English'], ['fr','Français']].forEach(([v,l]) => {
+      const o = el('option', { value: v }, l);
+      if (s.settings.uiLang === v) o.selected = true;
+      uiLangSelect.appendChild(o);
+    });
+    uiLangSelect.addEventListener('change', () => global.I18n.set(uiLangSelect.value));
+    card.appendChild(field(t('settings.uiLang'), uiLangSelect));
 
     const themeRow = el('div', { class:'segmented mt-12' });
-    [['light','Light'],['dark','Dark'],['system','System']].forEach(([v,l]) => {
+    [['light', t('settings.theme.light')], ['dark', t('settings.theme.dark')], ['system', t('settings.theme.system')]].forEach(([v,l]) => {
       const b = el('button', { type:'button', 'aria-pressed': String(s.settings.theme === v) }, l);
       b.addEventListener('click', () => { global.Theme.setMode(v); global.Settings.renderView(document.getElementById('main')); });
       themeRow.appendChild(b);
     });
-    card.appendChild(field('Theme', themeRow));
+    card.appendChild(field(t('settings.theme'), themeRow));
 
     const accents = ['indigo','rose','emerald','amber','sky','violet'];
     const accentRow = el('div', { class:'row flex-wrap gap-8 mt-8' });
@@ -60,23 +70,11 @@
       sw.addEventListener('click', () => { global.Theme.setAccent(a); global.Settings.renderView(document.getElementById('main')); });
       accentRow.appendChild(sw);
     });
-    card.appendChild(field('Accent color', accentRow));
+    card.appendChild(field(t('settings.accent'), accentRow));
 
     const out = el('button', { class:'btn btn-outline mt-20', style:{ color:'var(--danger)', borderColor:'var(--danger-bg)' } });
-    out.innerHTML = icons.lock + '<span>Log out</span>';
-    out.addEventListener('click', async () => {
-      const ok = await confirmModal({
-        title:'Log out?',
-        message:'Your data stays on this device.',
-        confirmLabel:'Log out',
-        danger:true
-      });
-      if (!ok) return;
-      const success = global.Auth.logout();
-      if (!success) { toast('Logout failed. Please try again.', 'error'); return; }
-      window.location.hash = '#/';
-      window.location.reload();
-    });
+    out.innerHTML = icons.lock + '<span>' + global.U.escapeHtml(t('settings.logOut')) + '</span>';
+    out.addEventListener('click', () => global.App.performLogout());
     card.appendChild(out);
     return card;
   }
@@ -141,11 +139,48 @@
     modelSel.addEventListener('change', () => { customModelInput.style.display = modelSel.value === '__custom__' ? 'block' : 'none'; if (modelSel.value !== '__custom__') global.AI.setModel(id, modelSel.value); });
     customModelInput.addEventListener('change', () => global.AI.setModel(id, customModelInput.value.trim() || def.defaultModel));
 
+    // Refresh-models button (uses provider.listModels if available)
+    const refreshModels = el('button', { class:'btn btn-ghost btn-sm', type:'button', title: 'Refresh model list' });
+    refreshModels.innerHTML = icons.refresh;
+    refreshModels.addEventListener('click', async () => {
+      if (!hasKey) { toast('Save a key first.', 'warning'); return; }
+      refreshModels.disabled = true;
+      refreshModels.innerHTML = '<span class="spinner"></span>';
+      try {
+        const live = await global.AI.listProviderModels(id);
+        if (Array.isArray(live) && live.length) {
+          const currentVal = modelSel.value;
+          while (modelSel.firstChild) modelSel.removeChild(modelSel.firstChild);
+          live.forEach(m => modelSel.appendChild(el('option', { value: m }, m)));
+          modelSel.appendChild(customOpt);
+          if (live.includes(currentVal)) modelSel.value = currentVal;
+          toast('Loaded ' + live.length + ' models.', 'success');
+        } else {
+          toast('No models returned.', 'warning');
+        }
+      } catch (e) {
+        toast(e.message || 'Failed to list models.', 'error');
+      } finally {
+        refreshModels.disabled = false;
+        refreshModels.innerHTML = icons.refresh;
+      }
+    });
+
     const baseInput = el('input', { type:'text', placeholder: def.defaultBaseUrl, value: cfg.baseUrl || '' });
     baseInput.addEventListener('change', () => global.AI.setBaseUrl(id, baseInput.value.trim()));
 
+    const modelCol = el('div', { class:'col flex-1', style:{ minWidth:'180px' } });
+    modelCol.appendChild(el('div', { class:'field-label' }, 'Model'));
+    const modelRow = el('div', { class:'row gap-4', style:{ alignItems:'stretch' } });
+    const modelWrap = el('div', { class:'flex-1' });
+    modelWrap.appendChild(modelSel);
+    modelRow.appendChild(modelWrap);
+    modelRow.appendChild(refreshModels);
+    modelCol.appendChild(modelRow);
+    modelCol.appendChild(customModelInput);
+
     info.appendChild(el('div', { class:'row gap-8 mb-8 flex-wrap' },
-      el('div', { class:'col flex-1', style:{ minWidth:'180px' } }, el('div', { class:'field-label' }, 'Model'), modelSel, customModelInput),
+      modelCol,
       el('div', { class:'col flex-1', style:{ minWidth:'200px' } }, el('div', { class:'field-label' }, 'Base URL (optional)'), baseInput)
     ));
 
@@ -267,11 +302,19 @@
       container.innerHTML = '';
       const wrap = el('section', { class:'view' });
       const header = el('div', { class:'view-header' });
-      header.appendChild(el('div', { class:'flex-1' }, el('h1', {}, 'Settings'), el('p', { class:'subtitle muted' }, 'Customize Frenmot to your taste, connect AI, and manage your data.')));
+      header.appendChild(el('div', { class:'flex-1' },
+        el('h1', {}, t('settings.title')),
+        el('p', { class:'subtitle muted' }, t('settings.subtitle'))));
       wrap.appendChild(header);
 
       const tabs = el('div', { class:'segmented mb-20' });
-      [['general','General'],['ai','AI Integrations'],['srs','Spaced Repetition'],['reminders','Reminders'],['data','Data']].forEach(([id, label]) => {
+      [
+        ['general', t('settings.tab.general')],
+        ['ai',      t('settings.tab.ai')],
+        ['srs',     t('settings.tab.srs')],
+        ['reminders', t('settings.tab.reminders')],
+        ['data',    t('settings.tab.data')]
+      ].forEach(([id, label]) => {
         const b = el('button', { type:'button', 'aria-pressed': String(id === activeTab) }, label);
         b.addEventListener('click', () => { activeTab = id; Settings.renderView(container); });
         tabs.appendChild(b);

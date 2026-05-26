@@ -172,16 +172,18 @@
     container.innerHTML = '';
     const wrap = el('section', { class: 'view' });
 
-    // Header
+    // Header — "Add a new word" and "Enhance with AI" sit side-by-side at the top
     const header = el('div', { class: 'view-header' });
     header.appendChild(el('div', { class: 'flex-1' },
-      el('h1', {}, 'Vocabulary'),
-      el('p', { class: 'subtitle muted' }, 'Build, organize, and master your personal word collection.')
+      el('h1', {}, t('vocab.title')),
+      el('p', { class: 'subtitle muted' }, t('vocab.subtitle'))
     ));
     const actions = el('div', { class: 'actions' });
-    actions.appendChild(buildBtn('btn btn-outline', icons.upload, 'Import', () => openImportModal()));
-    actions.appendChild(buildBtn('btn btn-outline', icons.download, 'Export', () => exportJSON()));
-    actions.appendChild(buildBtn('btn btn-primary', icons.plus, 'Add word', () => openWordModal()));
+    actions.appendChild(buildBtn('btn btn-outline', icons.upload, t('common.import'), () => openImportModal()));
+    actions.appendChild(buildBtn('btn btn-outline', icons.download, t('common.export'), () => exportJSON()));
+    actions.appendChild(buildBtn('btn btn-secondary', icons.sparkle, t('vocab.enhanceAI'),
+      () => openWordModal(null, { enhance: true })));
+    actions.appendChild(buildBtn('btn btn-primary', icons.plus, t('vocab.addNew'), () => openWordModal()));
     header.appendChild(actions);
     wrap.appendChild(header);
 
@@ -191,7 +193,7 @@
     searchWrap.innerHTML = icons.search;
     const searchInput = el('input', {
       type: 'search',
-      placeholder: 'Search word, translation, definition or tag…',
+      placeholder: t('vocab.searchPlaceholder'),
       value: view.query
     });
     searchInput.addEventListener('input', debounce(() => {
@@ -204,8 +206,8 @@
     // Status filter
     const statusSelect = el('select', { class: 'select', style: { maxWidth: '180px' } });
     [
-      ['all','All statuses'], ['due','Due now'], ['new','New'],
-      ['learning','Learning'], ['review','Reviewing'], ['mastered','Mastered']
+      ['all', t('vocab.allStatuses')], ['due', t('vocab.dueNow')], ['new', t('vocab.new')],
+      ['learning', t('vocab.learning')], ['review', t('vocab.review')], ['mastered', t('vocab.mastered')]
     ].forEach(([v,l]) => {
       const o = el('option', { value: v }, l);
       if (view.statusFilter === v) o.selected = true;
@@ -216,7 +218,8 @@
 
     // Sort
     const sortSelect = el('select', { class: 'select', style: { maxWidth: '160px' } });
-    [['recent','Recently updated'],['alpha','Alphabetical'],['difficulty','Difficulty'],['due','Due date']]
+    [['recent', t('vocab.recent')], ['alpha', t('vocab.alpha')],
+     ['difficulty', t('vocab.byDifficulty')], ['due', t('vocab.byDue')]]
       .forEach(([v,l]) => {
         const o = el('option', { value: v }, l);
         if (view.sort === v) o.selected = true;
@@ -234,15 +237,15 @@
       const allChip = el('button', {
         class: 'tag', style: { cursor: 'pointer', padding: '4px 10px' },
         onclick: () => { view.tagFilter = null; renderList(); }
-      }, 'All tags');
+      }, t('vocab.allTags'));
       if (!view.tagFilter) allChip.style.outline = '2px solid var(--accent-500)';
       chips.appendChild(allChip);
-      tags.forEach(t => {
+      tags.forEach(tagName => {
         const c = el('button', {
           class: 'tag', style: { cursor: 'pointer', padding: '4px 10px' },
-          onclick: () => { view.tagFilter = (view.tagFilter === t ? null : t); renderList(); }
-        }, '#' + t);
-        if (view.tagFilter === t) c.style.outline = '2px solid var(--accent-500)';
+          onclick: () => { view.tagFilter = (view.tagFilter === tagName ? null : tagName); renderList(); }
+        }, '#' + tagName);
+        if (view.tagFilter === tagName) c.style.outline = '2px solid var(--accent-500)';
         chips.appendChild(c);
       });
       wrap.appendChild(chips);
@@ -266,15 +269,14 @@
 
     function emptyState() {
       const wrap = el('div', { class: 'empty-state', id: 'vocab-list' });
+      const isFresh = Vocab.all().length === 0;
       wrap.innerHTML = `
         <div class="icon-wrap">${icons.book}</div>
-        <h3>${Vocab.all().length === 0 ? 'No words yet' : 'No matches'}</h3>
-        <p>${Vocab.all().length === 0 ?
-            'Start by adding your first vocabulary word, importing a list, or asking the AI tutor.' :
-            'Try a different search or clear your filters.'}</p>`;
+        <h3>${escapeHtml(isFresh ? t('vocab.empty.title') : t('vocab.empty.matches'))}</h3>
+        <p>${escapeHtml(isFresh ? t('vocab.empty.body') : t('vocab.empty.bodyMatches'))}</p>`;
       const row = el('div', { class: 'row', style: { justifyContent:'center' } });
-      row.appendChild(buildBtn('btn btn-primary', icons.plus, 'Add word', () => openWordModal()));
-      row.appendChild(buildBtn('btn btn-outline', icons.upload, 'Import', () => openImportModal()));
+      row.appendChild(buildBtn('btn btn-primary', icons.plus, t('vocab.addNew'), () => openWordModal()));
+      row.appendChild(buildBtn('btn btn-outline', icons.upload, t('common.import'), () => openImportModal()));
       wrap.appendChild(row);
       return wrap;
     }
@@ -342,18 +344,19 @@
   global.Vocab.openImportModal = openImportModal;
 
   /* ----- Word add/edit modal ----- */
-  function openWordModal(existing) {
+  function openWordModal(existing, opts = {}) {
     const w = existing ? { ...existing } : null;
-    const form = el('form', { class: 'col gap-12' });
+    const form = el('form', { class: 'col gap-12', autocomplete:'off' });
 
     const row1 = el('div', { class: 'row gap-12', style: { flexWrap:'wrap' } });
-    const sourceField = field('Word *', el('input', {
+    const sourceField = field(t('vocab.field.word') + ' *', el('input', {
       type:'text', required:true, value: w?.source || '',
-      placeholder:'e.g. flâner', name:'source'
+      placeholder: t('vocab.field.wordPlaceholder'), name:'source',
+      class: 'accent-aware'
     }));
-    const targetField = field('Translation', el('input', {
+    const targetField = field(t('vocab.field.translation'), el('input', {
       type:'text', value: w?.target || '',
-      placeholder:'e.g. to stroll aimlessly', name:'target'
+      placeholder: t('vocab.field.translationPlaceholder'), name:'target'
     }));
     sourceField.style.flex = '1 1 220px';
     targetField.style.flex = '1 1 220px';
@@ -361,89 +364,122 @@
     row1.appendChild(targetField);
     form.appendChild(row1);
 
-    const defField = field('Definition / meaning', el('textarea', {
-      rows:'2', placeholder:'A short definition…', name:'definition'
+    const defField = field(t('vocab.field.definition'), el('textarea', {
+      rows:'2', placeholder: t('vocab.field.defPlaceholder'), name:'definition'
     }, w?.definition || ''));
     form.appendChild(defField);
 
-    const exField = field('Example sentence', el('textarea', {
-      rows:'2', placeholder:'Use the word in context.', name:'example'
+    const exField = field(t('vocab.field.example'), el('textarea', {
+      rows:'2', placeholder: t('vocab.field.exPlaceholder'), name:'example',
+      class: 'accent-aware'
     }, w?.example || ''));
     form.appendChild(exField);
 
     const row2 = el('div', { class: 'row gap-12', style: { flexWrap:'wrap' } });
-    const posField = field('Part of speech', selectFrom('pos', ['','noun','verb','adjective','adverb','phrase','expression','preposition','other'], w?.pos || ''));
-    const genderField = field('Gender / form', selectFrom('gender', ['','masculine','feminine','neuter','plural'], w?.gender || ''));
-    const diffField = field('Difficulty', el('input', { type:'number', min:'1', max:'5', name:'difficulty', value: String(w?.difficulty || 2) }));
+    const posField = field(t('vocab.field.pos'), selectFrom('pos',
+      [
+        ['', '—'],
+        ['noun', t('pos.noun')], ['verb', t('pos.verb')],
+        ['adjective', t('pos.adjective')], ['adverb', t('pos.adverb')],
+        ['phrase', t('pos.phrase')], ['expression', t('pos.expression')],
+        ['preposition', t('pos.preposition')], ['other', t('pos.other')]
+      ], w?.pos || ''));
+    const genderField = field(t('vocab.field.gender'), selectFrom('gender',
+      [['', '—'], ['masculine','masculine'], ['feminine','feminine'],
+       ['neuter','neuter'], ['plural','plural']], w?.gender || ''));
+    const diffField = field(t('vocab.field.difficulty'),
+      el('input', { type:'number', min:'1', max:'5', name:'difficulty', value: String(w?.difficulty || 2) }));
     [posField, genderField, diffField].forEach(f => { f.style.flex = '1 1 140px'; row2.appendChild(f); });
     form.appendChild(row2);
 
-    const conjField = field('Conjugation notes (verbs)', el('textarea', { rows:'2', placeholder:'je vais, tu vas, …', name:'conjugation' }, w?.conjugation || ''));
+    const conjField = field(t('vocab.field.conjugation'), el('textarea', {
+      rows:'2', placeholder:'je vais, tu vas, …', name:'conjugation', class:'accent-aware'
+    }, w?.conjugation || ''));
     form.appendChild(conjField);
 
-    const tagsField = field('Tags (comma separated)', el('input', { type:'text', name:'tags', placeholder:'e.g. travel, B2, idioms', value: (w?.tags || []).join(', ') }));
+    const tagsField = field(t('vocab.field.tags'), el('input', {
+      type:'text', name:'tags', placeholder: t('vocab.field.tagsPlaceholder'),
+      value: (w?.tags || []).join(', ')
+    }));
     form.appendChild(tagsField);
 
-    const notesField = field('Notes', el('textarea', { rows:'2', name:'notes', placeholder:'Anything else worth remembering' }, w?.notes || ''));
+    const notesField = field(t('vocab.field.notes'), el('textarea', {
+      rows:'2', name:'notes', placeholder:'Anything else worth remembering'
+    }, w?.notes || ''));
     form.appendChild(notesField);
 
-    const aiBtn = el('button', { type:'button', class:'btn btn-secondary' }, 'Enhance with AI');
-    aiBtn.innerHTML = global.U.icons.sparkle + '<span>Enhance with AI</span>';
-    aiBtn.addEventListener('click', () => enhanceWithAI(form));
+    /* -- Footer buttons live INSIDE the form so submit fires reliably -- */
+    const aiBtn = el('button', { type:'button', class:'btn btn-secondary' });
+    aiBtn.innerHTML = global.U.icons.sparkle + '<span>' + escapeHtml(t('vocab.enhanceAI')) + '</span>';
+    aiBtn.addEventListener('click', () => enhanceWithAI(form, aiBtn));
 
-    const cancel = el('button', { type:'button', class:'btn btn-ghost' }, 'Cancel');
-    const save   = el('button', { type:'submit', class:'btn btn-primary' }, w ? 'Save changes' : 'Add word');
+    const cancel = el('button', { type:'button', class:'btn btn-ghost' }, t('common.cancel'));
+    const save   = el('button', { type:'submit', class:'btn btn-primary' },
+                       w ? t('common.save') : t('vocab.addWord'));
     let removeBtn;
     if (w) {
-      removeBtn = el('button', { type:'button', class:'btn btn-ghost', style:{ color:'var(--danger)' } }, 'Delete');
-      removeBtn.innerHTML = icons.trash + '<span>Delete</span>';
+      removeBtn = el('button', { type:'button', class:'btn btn-ghost', style:{ color:'var(--danger)' } });
+      removeBtn.innerHTML = icons.trash + '<span>' + escapeHtml(t('common.delete')) + '</span>';
     }
 
-    const footer = el('div', { class:'row', style:{ width:'100%', justifyContent:'space-between', flexWrap:'wrap', gap:'8px' } });
-    const left = el('div', { class:'row gap-8' }, aiBtn);
+    const footer = el('div', {
+      class:'modal-form-footer',
+      style:{ width:'100%', display:'flex', justifyContent:'space-between',
+              flexWrap:'wrap', gap:'8px', marginTop:'8px' }
+    });
+    const left = el('div', { class:'row gap-8 flex-wrap' }, aiBtn);
     if (removeBtn) left.appendChild(removeBtn);
-    const right = el('div', { class:'row gap-8' }, cancel, save);
+    const right = el('div', { class:'row gap-8 flex-wrap' }, cancel, save);
     footer.appendChild(left);
     footer.appendChild(right);
+    form.appendChild(footer);
 
     const { close } = modal({
-      title: w ? 'Edit word' : 'Add a new word',
+      title: w ? t('vocab.modal.edit') : t('vocab.modal.add'),
       body: form,
-      footer,
       size: 'lg'
     });
     cancel.addEventListener('click', close);
     if (removeBtn) removeBtn.addEventListener('click', async () => {
       const ok = await confirmModal({
-        title: 'Delete this word?',
-        message: `“${w.source}” and its review history will be removed.`,
-        confirmLabel: 'Delete', danger: true
+        title: t('vocab.action.deleteConfirmTitle'),
+        message: t('vocab.action.deleteConfirmBody') + ` ("${w.source}")`,
+        confirmLabel: t('common.delete'), danger: true
       });
-      if (ok) { Vocab.remove(w.id); close(); toast('Word deleted', 'success'); }
+      if (ok) { Vocab.remove(w.id); close(); toast(t('vocab.action.deleted'), 'success'); }
     });
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const data = readForm(form);
-      const tags = (data.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+      const tagsList = (data.tags || '').split(',').map(s => s.trim()).filter(Boolean);
       const patch = {
-        source: data.source.trim(),
-        target: data.target.trim(),
-        definition: data.definition.trim(),
-        example: data.example.trim(),
-        pos: data.pos,
-        gender: data.gender,
+        source: (data.source || '').trim(),
+        target: (data.target || '').trim(),
+        definition: (data.definition || '').trim(),
+        example: (data.example || '').trim(),
+        pos: data.pos || '',
+        gender: data.gender || '',
         difficulty: Math.max(1, Math.min(5, Number(data.difficulty) || 2)),
-        conjugation: data.conjugation.trim(),
-        notes: data.notes.trim(),
-        tags
+        conjugation: (data.conjugation || '').trim(),
+        notes: (data.notes || '').trim(),
+        tags: tagsList
       };
-      if (!patch.source) { toast('Word is required.', 'error'); return; }
+      if (!patch.source) { toast(t('vocab.action.required'), 'error'); return; }
       if (w) Vocab.update(w.id, patch);
       else Vocab.add({ ...patch, sourceType: 'manual' });
       close();
-      toast(w ? 'Word updated' : 'Word added', 'success');
+      toast(w ? t('vocab.action.updated') : t('vocab.action.added'), 'success');
     });
+
+    if (global.Accents) global.Accents.attachInside(form);
+
+    if (opts.enhance) {
+      setTimeout(() => {
+        const sourceInput = form.elements['source'];
+        if (sourceInput) sourceInput.focus();
+      }, 150);
+    }
   }
 
   function field(label, input) {
@@ -455,8 +491,10 @@
   function selectFrom(name, options, value) {
     const sel = el('select', { name });
     options.forEach(opt => {
-      const o = el('option', { value: opt }, opt || '—');
-      if (opt === value) o.selected = true;
+      const val = Array.isArray(opt) ? opt[0] : opt;
+      const lbl = Array.isArray(opt) ? opt[1] : (opt || '—');
+      const o = el('option', { value: val }, lbl);
+      if (val === value) o.selected = true;
       sel.appendChild(o);
     });
     return sel;
@@ -470,14 +508,20 @@
     return out;
   }
 
-  async function enhanceWithAI(form) {
+  async function enhanceWithAI(form, btn) {
     const data = readForm(form);
     const word = (data.source || '').trim();
-    if (!word) { toast('Type a word first.', 'warning'); return; }
+    if (!word) { toast(t('vocab.action.typeFirst'), 'warning'); return; }
     if (!global.AI || !global.AI.isReady()) {
-      toast('Connect an AI provider in Settings to use this.', 'warning'); return;
+      toast(t('vocab.action.connectAI'), 'warning'); return;
     }
-    toast('Asking AI…', 'info', 1500);
+    if (btn) {
+      btn.disabled = true;
+      btn.dataset.prevHtml = btn.innerHTML;
+      btn.innerHTML = '<span class="spinner"></span><span>' + escapeHtml(t('vocab.action.aiThinking')) + '</span>';
+    } else {
+      toast(t('vocab.action.aiThinking'), 'info', 1500);
+    }
     try {
       const enhanced = await global.AI.enhanceWord(word, global.State.S.settings.targetLang);
       if (enhanced.target && !data.target) form.elements['target'].value = enhanced.target;
@@ -487,9 +531,14 @@
       if (enhanced.gender && !data.gender) form.elements['gender'].value = enhanced.gender;
       if (enhanced.conjugation && !data.conjugation) form.elements['conjugation'].value = enhanced.conjugation;
       if (enhanced.difficulty) form.elements['difficulty'].value = enhanced.difficulty;
-      toast('AI enhanced ✨', 'success');
+      toast(t('vocab.action.aiDone'), 'success');
     } catch (err) {
       toast(err.message || 'AI request failed', 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = btn.dataset.prevHtml || (global.U.icons.sparkle + '<span>' + escapeHtml(t('vocab.enhanceAI')) + '</span>');
+      }
     }
   }
 
@@ -502,9 +551,9 @@
     const ta = el('textarea', { rows:'10', placeholder:`flâner — to stroll aimlessly\ndépayser | to feel out of place\n\nor [{"source":"...","target":"...","definition":"..."}]` });
     wrap.appendChild(ta);
 
-    const cancel = el('button', { class:'btn btn-ghost' }, 'Cancel');
-    const ok     = el('button', { class:'btn btn-primary' }, 'Import');
-    const { close } = modal({ title: 'Import vocabulary', body: wrap, footer: [cancel, ok] });
+    const cancel = el('button', { class:'btn btn-ghost' }, t('common.cancel'));
+    const ok     = el('button', { class:'btn btn-primary' }, t('common.import'));
+    const { close } = modal({ title: t('common.import'), body: wrap, footer: [cancel, ok] });
     cancel.addEventListener('click', close);
     ok.addEventListener('click', () => {
       const text = ta.value.trim();
