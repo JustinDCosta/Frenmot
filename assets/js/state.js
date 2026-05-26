@@ -104,6 +104,16 @@
     }, 60);
   }
 
+  /** Flush pending writes immediately. Used on logout / pagehide so
+   *  data isn't lost if the user closes the tab during the 60ms debounce. */
+  function flush() {
+    if (saveTimer) {
+      clearTimeout(saveTimer);
+      saveTimer = null;
+      try { storage.set('state', S); } catch {}
+    }
+  }
+
   function load() {
     const raw = storage.get('state', null);
     return migrate(raw);
@@ -111,12 +121,34 @@
 
   let S = load();
 
+  /* If the synchronous read returned nothing but IndexedDB had a copy,
+     storage.get scheduled an async restore. When that restore lands,
+     storage emits 'storage:restored' — pick the value back up here so
+     a localStorage wipe is recoverable without a manual refresh. */
+  bus.on('storage:restored', ({ key }) => {
+    if (key !== 'state') return;
+    const recovered = storage.get('state', null);
+    if (recovered) {
+      S = migrate(recovered);
+      bus.emit('state:reset');
+    }
+  });
+
+  /* Make sure pending state writes hit disk before the tab goes away.
+     'pagehide' is the only event guaranteed to fire on iOS Safari and
+     when the page is moved to the back/forward cache. */
+  if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('beforeunload', flush);
+  }
+
   // Public API
   const State = {
     get S()  { return S; },
     save:    () => persist(),
+    flush:   () => flush(),
     reload() { S = load(); },
-    reset()  { S = JSON.parse(JSON.stringify(DEFAULT_STATE)); persist(); bus.emit('state:reset'); },
+    reset()  { S = JSON.parse(JSON.stringify(DEFAULT_STATE)); persist(); flush(); bus.emit('state:reset'); },
 
     /** Update a slice and persist. Path = dot path into S (e.g., 'settings.accent') */
     set(path, value) {

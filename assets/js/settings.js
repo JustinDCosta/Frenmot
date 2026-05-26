@@ -64,7 +64,19 @@
 
     const out = el('button', { class:'btn btn-outline mt-20', style:{ color:'var(--danger)', borderColor:'var(--danger-bg)' } });
     out.innerHTML = icons.lock + '<span>Log out</span>';
-    out.addEventListener('click', async () => { const ok = await confirmModal({ title:'Log out?', message:'Your data stays on this device.', confirmLabel:'Log out', danger:true }); if (ok) { global.Auth.logout(); window.location.hash = '#/'; window.location.reload(); } });
+    out.addEventListener('click', async () => {
+      const ok = await confirmModal({
+        title:'Log out?',
+        message:'Your data stays on this device.',
+        confirmLabel:'Log out',
+        danger:true
+      });
+      if (!ok) return;
+      const success = global.Auth.logout();
+      if (!success) { toast('Logout failed. Please try again.', 'error'); return; }
+      window.location.hash = '#/';
+      window.location.reload();
+    });
     card.appendChild(out);
     return card;
   }

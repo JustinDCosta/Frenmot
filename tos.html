@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terms of Service — Frenmot</title>
+  <link rel="icon" href="app_logo.png" />
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #5b6478;
+      --accent: #6366f1;
+      --border: #e6e8ef;
+      --radius: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --surface: #131c3a;
+        --text: #f1f5fb;
+        --muted: #aab1c4;
+        --accent: #818cf8;
+        --border: #243056;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--bg);
+      padding: 40px 20px 80px;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+    }
+    @media (max-width: 600px) { .container { padding: 32px 22px; } }
+    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .logo img { width: 40px; height: 40px; border-radius: 10px; }
+    .logo span { font-size: 22px; font-weight: 800; font-family: Georgia, serif; }
+    h1 { font-size: 1.8rem; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+    .updated { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+    h2 { font-size: 1.15rem; font-weight: 700; margin: 32px 0 10px; color: var(--accent); }
+    p, ul, ol { margin: 0 0 16px; }
+    ul, ol { padding-left: 22px; }
+    li { margin-bottom: 8px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back { display: inline-block; margin-bottom: 24px; font-size: 14px; font-weight: 600; }
+    strong { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="back" href="/">← Back to Frenmot</a>
+    <div class="logo">
+      <img src="app_logo.png" alt="Frenmot" />
+      <span>Frenmot</span>
+    </div>
+    <h1>Terms of Service</h1>
+    <p class="updated">Last updated: May 25, 2025</p>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing or using Frenmot ("the app", "the service"), you agree to be bound by these Terms of Service. If you do not agree, please do not use the app.</p>
+
+    <h2>2. Description of Service</h2>
+    <p>Frenmot is a free, open-source, client-side web application designed to help users learn French (and other languages) through vocabulary building, spaced repetition, AI-assisted tutoring, PDF analysis, and conjugation practice. The app runs entirely in your browser.</p>
+
+    <h2>3. User Accounts</h2>
+    <ul>
+      <li>Frenmot uses a local account model. Your profile is stored on your device.</li>
+      <li>There is no cloud account, server-side authentication, or password management.</li>
+      <li>You are responsible for maintaining the security of your device and any API keys you enter into the app.</li>
+    </ul>
+
+    <h2>4. Acceptable Use</h2>
+    <p>You agree to use Frenmot only for lawful purposes. You may not:</p>
+    <ul>
+      <li>Use the app to generate, store, or distribute harmful, illegal, or abusive content.</li>
+      <li>Attempt to reverse-engineer, exploit, or attack the app or any connected third-party service.</li>
+      <li>Use the app in a way that violates the terms of service of any connected AI provider (OpenAI, Google, Groq, NVIDIA).</li>
+      <li>Misrepresent your identity or impersonate others when using AI features.</li>
+    </ul>
+
+    <h2>5. API Keys and Third-Party Services</h2>
+    <ul>
+      <li>Frenmot requires you to supply your own API keys for AI features. You are solely responsible for any costs, rate limits, or policy violations associated with your use of those keys.</li>
+      <li>Frenmot is not affiliated with OpenAI, Google, Groq, or NVIDIA. Your use of their APIs is governed by their respective terms of service.</li>
+      <li>We do not guarantee the availability, accuracy, or safety of AI-generated content. AI responses may contain errors, biases, or inappropriate material.</li>
+    </ul>
+
+    <h2>6. Data and Privacy</h2>
+    <p>Your use of Frenmot is also governed by our <a href="/privacy.html">Privacy Policy</a>. Key points:</p>
+    <ul>
+      <li>All data is stored locally on your device (in browser localStorage and IndexedDB).</li>
+      <li>We do not collect, transmit, or store your data on any Frenmot-operated server.</li>
+      <li>You are responsible for backing up your data via Settings → Data → Export. We are not liable for data loss due to clearing browser site data, device failure, or hardware change.</li>
+    </ul>
+
+    <h2>7. Intellectual Property</h2>
+    <ul>
+      <li>Frenmot's source code is provided under its open-source license (see the project repository for details).</li>
+      <li>Content you create within the app (vocabulary lists, notes, saved summaries) belongs to you.</li>
+      <li>AI-generated content is subject to the intellectual property policies of the respective AI provider.</li>
+      <li>PDF content you upload remains your responsibility. Do not upload copyrighted material you do not have the right to process.</li>
+    </ul>
+
+    <h2>8. Disclaimer of Warranties</h2>
+    <p>Frenmot is provided <strong>"as is"</strong> and <strong>"as available"</strong> without warranties of any kind, express or implied, including but not limited to:</p>
+    <ul>
+      <li>Fitness for a particular purpose.</li>
+      <li>Accuracy or completeness of AI-generated translations, conjugations, or definitions.</li>
+      <li>Uninterrupted or error-free operation.</li>
+      <li>Security of locally stored data against device theft or browser vulnerabilities.</li>
+    </ul>
+    <p>Frenmot is a learning aid, not a certified educational institution. Do not rely solely on AI-generated content for professional, academic, or legal purposes.</p>
+
+    <h2>9. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by law, the developers of Frenmot shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from:</p>
+    <ul>
+      <li>Your use of or inability to use the app.</li>
+      <li>Errors in AI-generated content.</li>
+      <li>Loss of data stored locally on your device.</li>
+      <li>Unauthorized access to your device or API keys.</li>
+      <li>Charges incurred through your AI provider API keys.</li>
+    </ul>
+
+    <h2>10. Modifications to the Service</h2>
+    <p>We reserve the right to modify, suspend, or discontinue any part of Frenmot at any time without notice. As a client-side app, you can continue using any version you have loaded, but we do not guarantee backward compatibility of future updates with your existing data.</p>
+
+    <h2>11. Changes to These Terms</h2>
+    <p>We may revise these terms at any time. The "Last updated" date at the top indicates the most recent revision. Continued use after changes constitutes acceptance of the new terms.</p>
+
+    <h2>12. Governing Law</h2>
+    <p>These terms shall be governed by and construed in accordance with applicable law in your jurisdiction. Any disputes shall be resolved in the courts of competent jurisdiction where the developer resides, unless otherwise required by local consumer protection law.</p>
+
+    <h2>13. Severability</h2>
+    <p>If any provision of these terms is found to be unenforceable, the remaining provisions shall continue in full force and effect.</p>
+
+    <h2>14. Contact</h2>
+    <p>For questions about these terms, please open an issue on the project's GitHub repository or contact the developer directly.</p>
+  </div>
+</body>
+</html>

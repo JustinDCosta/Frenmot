@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Privacy Policy — Frenmot</title>
+  <link rel="icon" href="app_logo.png" />
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #5b6478;
+      --accent: #6366f1;
+      --border: #e6e8ef;
+      --radius: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1020;
+        --surface: #131c3a;
+        --text: #f1f5fb;
+        --muted: #aab1c4;
+        --accent: #818cf8;
+        --border: #243056;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--bg);
+      padding: 40px 20px 80px;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+    }
+    @media (max-width: 600px) { .container { padding: 32px 22px; } }
+    .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+    .logo img { width: 40px; height: 40px; border-radius: 10px; }
+    .logo span { font-size: 22px; font-weight: 800; font-family: Georgia, serif; }
+    h1 { font-size: 1.8rem; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+    .updated { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+    h2 { font-size: 1.15rem; font-weight: 700; margin: 32px 0 10px; color: var(--accent); }
+    p, ul, ol { margin: 0 0 16px; }
+    ul, ol { padding-left: 22px; }
+    li { margin-bottom: 8px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back { display: inline-block; margin-bottom: 24px; font-size: 14px; font-weight: 600; }
+    strong { font-weight: 700; }
+    code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="back" href="/">← Back to Frenmot</a>
+    <div class="logo">
+      <img src="app_logo.png" alt="Frenmot" />
+      <span>Frenmot</span>
+    </div>
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: May 25, 2025</p>
+
+    <h2>1. Introduction</h2>
+    <p>Frenmot ("we", "our", "the app") is a client-side language-learning web application. We are committed to protecting your privacy. This policy explains what data the app handles, how it is stored, and your rights regarding that data.</p>
+
+    <h2>2. Data We Collect</h2>
+    <p>Frenmot is designed with a <strong>privacy-first, local-first</strong> architecture. We do not operate backend servers that collect or store your personal data. Specifically:</p>
+    <ul>
+      <li><strong>Account information</strong> — A display name, optional email, and language preference you provide during setup. This is stored only on your device.</li>
+      <li><strong>Vocabulary, progress, and settings</strong> — All learning data (words, SRS schedules, PDF text, chat history, review stats) is stored locally in your browser.</li>
+      <li><strong>API keys</strong> — If you connect an AI provider (OpenAI, Google Gemini, Groq, NVIDIA), your API key is stored locally on your device with lightweight obfuscation. It is never transmitted to any Frenmot server.</li>
+    </ul>
+
+    <h2>3. How Your Data Is Stored</h2>
+    <p>All app data lives in your browser, using two layers for durability:</p>
+    <ul>
+      <li><strong>localStorage</strong> — Primary read/write layer. Fast and synchronous.</li>
+      <li><strong>IndexedDB</strong> — A mirror copy with a much larger quota. If localStorage is cleared, Frenmot transparently restores your data from this mirror on the next load.</li>
+    </ul>
+    <p>We also request "persistent storage" from your browser when supported, asking it not to evict Frenmot's data under disk pressure.</p>
+    <p>Clearing all browser site data (cookies, cache, and storage together) will permanently delete your local data, so we recommend exporting a backup periodically from Settings → Data → Export.</p>
+
+    <h2>4. Third-Party Services</h2>
+    <p>When you use AI features, your prompts and vocabulary context are sent directly from your browser to the AI provider you configured (OpenAI, Google, Groq, or NVIDIA) using <strong>your own API key</strong>. Frenmot does not proxy, log, or store these requests. Each provider's own privacy policy governs how they handle your data:</p>
+    <ul>
+      <li><a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener">OpenAI Privacy Policy</a></li>
+      <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a></li>
+      <li><a href="https://groq.com/privacy-policy/" target="_blank" rel="noopener">Groq Privacy Policy</a></li>
+      <li><a href="https://www.nvidia.com/en-us/about-nvidia/privacy-policy/" target="_blank" rel="noopener">NVIDIA Privacy Policy</a></li>
+    </ul>
+    <p>We also load the following external resources:</p>
+    <ul>
+      <li>Google Fonts (Inter, Fraunces) — subject to <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google's Privacy Policy</a>.</li>
+      <li>PDF.js from cdnjs — no personal data is transmitted.</li>
+    </ul>
+
+    <h2>5. Data We Do NOT Collect</h2>
+    <ul>
+      <li>We do not use analytics, tracking pixels, or advertising SDKs.</li>
+      <li>We do not collect IP addresses, device fingerprints, or usage telemetry.</li>
+      <li>We do not sell, rent, or share any user data with third parties.</li>
+      <li>We do not store any data on Frenmot-operated servers — there is no Frenmot server.</li>
+      <li>We do not sync data to the cloud.</li>
+    </ul>
+
+    <h2>6. Cookies</h2>
+    <p>Frenmot does not set any cookies. All persistence uses browser localStorage and IndexedDB.</p>
+
+    <h2>7. Children's Privacy</h2>
+    <p>Frenmot is not directed at children under 13. We do not knowingly collect personal information from children. If you believe a child has provided data through the app, please contact us so we can advise on clearing it.</p>
+
+    <h2>8. Your Rights</h2>
+    <p>Because all your data is stored locally on your device, you have full control:</p>
+    <ul>
+      <li><strong>Access</strong> — Open Settings → Data → Export to download all your data as JSON.</li>
+      <li><strong>Deletion</strong> — Open Settings → Data → Reset to permanently delete all local data (clears both localStorage and IndexedDB).</li>
+      <li><strong>Portability</strong> — The exported JSON file is human-readable and can be imported into another Frenmot instance.</li>
+    </ul>
+
+    <h2>9. Security</h2>
+    <p>API keys are stored with lightweight XOR obfuscation to prevent casual exposure in browser DevTools. This is <strong>not encryption</strong> — it is a best-effort measure for a client-side app. For stronger security, we recommend using API keys with spending limits and revoking them if your device is compromised.</p>
+    <p>All network requests to AI providers and Google APIs use HTTPS exclusively.</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this policy as the app evolves. The "Last updated" date at the top reflects the most recent revision. Continued use of the app after changes constitutes acceptance.</p>
+
+    <h2>11. Contact</h2>
+    <p>If you have questions about this privacy policy, please open an issue on the project's GitHub repository or contact the developer directly.</p>
+  </div>
+</body>
+</html>

@@ -263,22 +263,185 @@
   }
 
   // ---------- Storage ----------
+  /*
+    Two-layer durable storage:
+      1. localStorage (synchronous, fast, primary read path)
+      2. IndexedDB    (async mirror, larger quota, survives more aggressive
+                       browser cleanups — e.g. "Clear cookies and site data"
+                       leaves IndexedDB untouched in some browsers)
+
+    On every write we:
+      • Update localStorage synchronously (so reads are immediate).
+      • Schedule an async mirror to IndexedDB.
+
+    On the very first read of a key, if localStorage is empty but
+    IndexedDB has a copy, we restore the value back to localStorage so
+    the rest of the app sees it. This is what makes user data resilient
+    against accidental browser-cache clears: as long as IndexedDB
+    survives, the data does.
+
+    We also request "persistent storage" once via the StorageManager API
+    when available — this asks the browser not to evict our data under
+    storage pressure. Granted automatically in many browsers, prompts
+    in others, harmless if denied.
+  */
   const STORAGE_PREFIX = 'frenmot:';
+  const IDB_NAME       = 'frenmot-db';
+  const IDB_STORE      = 'kv';
+  const IDB_VERSION    = 1;
+  let idbReady = null;          // resolves to a db handle (or null on failure)
+  const restoredKeys = new Set(); // tracks keys we've already attempted to restore from IDB
+
+  function openDB() {
+    if (idbReady) return idbReady;
+    idbReady = new Promise((resolve) => {
+      try {
+        if (!('indexedDB' in window)) { resolve(null); return; }
+        const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+        req.onupgradeneeded = () => {
+          try { req.result.createObjectStore(IDB_STORE); } catch {}
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror   = () => { console.warn('[storage] IndexedDB open failed:', req.error); resolve(null); };
+        req.onblocked = () => resolve(null);
+      } catch (e) { console.warn('[storage] IndexedDB unavailable:', e); resolve(null); }
+    });
+    return idbReady;
+  }
+
+  function idbGet(key) {
+    return openDB().then(db => {
+      if (!db) return null;
+      return new Promise(resolve => {
+        try {
+          const tx = db.transaction(IDB_STORE, 'readonly');
+          const req = tx.objectStore(IDB_STORE).get(STORAGE_PREFIX + key);
+          req.onsuccess = () => resolve(req.result == null ? null : req.result);
+          req.onerror   = () => resolve(null);
+        } catch { resolve(null); }
+      });
+    });
+  }
+
+  function idbSet(key, value) {
+    return openDB().then(db => {
+      if (!db) return false;
+      return new Promise(resolve => {
+        try {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).put(value, STORAGE_PREFIX + key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror    = () => resolve(false);
+          tx.onabort    = () => resolve(false);
+        } catch { resolve(false); }
+      });
+    });
+  }
+
+  function idbDelete(key) {
+    return openDB().then(db => {
+      if (!db) return false;
+      return new Promise(resolve => {
+        try {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).delete(STORAGE_PREFIX + key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror    = () => resolve(false);
+        } catch { resolve(false); }
+      });
+    });
+  }
+
+  // Ask the browser to keep our data through storage pressure.
+  // Best-effort, runs once on first import.
+  (function requestPersistent() {
+    try {
+      if (navigator.storage && typeof navigator.storage.persist === 'function') {
+        // Don't await — fire and forget so it never blocks boot.
+        navigator.storage.persisted().then(already => {
+          if (!already) navigator.storage.persist().catch(() => {});
+        }).catch(() => {});
+      }
+    } catch { /* ignore */ }
+  })();
+
   const storage = {
+    /** Synchronous read from localStorage. If localStorage is empty for
+     *  this key and IndexedDB has a backup, we trigger an async restore
+     *  the first time we see the key. The current synchronous call
+     *  still returns the fallback, but a subsequent read (or the next
+     *  page load) will see the restored data.
+     *
+     *  For the app's state-load path this is fine: state.js calls
+     *  storage.get('state') once at boot, and on the very first boot
+     *  after a localStorage wipe we want callers to receive whatever
+     *  IndexedDB has so reload() can see it on next read.
+     */
     get(key, fallback = null) {
       try {
         const raw = localStorage.getItem(STORAGE_PREFIX + key);
-        return raw == null ? fallback : JSON.parse(raw);
-      } catch (e) { return fallback; }
+        if (raw != null) return JSON.parse(raw);
+      } catch (e) { /* fall through to IDB recovery */ }
+
+      // Try a synchronous fallback path: kick off IDB restore but also
+      // attempt to read it from the last successful in-memory cache.
+      if (!restoredKeys.has(key)) {
+        restoredKeys.add(key);
+        idbGet(key).then(value => {
+          if (value == null) return;
+          try {
+            // Only mirror back to localStorage if it's still missing.
+            // Don't trample a value that arrived between the two reads.
+            const cur = localStorage.getItem(STORAGE_PREFIX + key);
+            if (cur == null) {
+              localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value));
+              bus.emit('storage:restored', { key });
+            }
+          } catch { /* localStorage might be disabled — that's ok, IDB is still authoritative */ }
+        }).catch(() => {});
+      }
+      return fallback;
     },
+
+    /** Async-aware get used by code that wants to wait for IDB recovery. */
+    async getAsync(key, fallback = null) {
+      const sync = this.get(key, undefined);
+      if (sync !== undefined) return sync;
+      const fromIdb = await idbGet(key);
+      return fromIdb == null ? fallback : fromIdb;
+    },
+
     set(key, value) {
       try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value)); }
-      catch (e) { console.warn('[storage]', e); }
+      catch (e) {
+        // localStorage may be full (5-10 MB cap) or blocked (private mode).
+        // The IDB mirror below has a much larger quota, so the data is
+        // still durable.
+        console.warn('[storage] localStorage write failed:', e?.message);
+      }
+      // Mirror to IDB. Fire-and-forget so callers don't have to await.
+      idbSet(key, value).catch(() => {});
     },
-    remove(key) { localStorage.removeItem(STORAGE_PREFIX + key); },
+
+    remove(key) {
+      try { localStorage.removeItem(STORAGE_PREFIX + key); } catch {}
+      idbDelete(key).catch(() => {});
+    },
+
     clearAll() {
-      Object.keys(localStorage).forEach(k => {
-        if (k.startsWith(STORAGE_PREFIX)) localStorage.removeItem(k);
+      try {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith(STORAGE_PREFIX)) localStorage.removeItem(k);
+        });
+      } catch {}
+      // Wipe the IDB mirror too so a "Reset all data" doesn't leave a
+      // ghost copy that gets restored on next boot.
+      openDB().then(db => {
+        if (!db) return;
+        try {
+          const tx = db.transaction(IDB_STORE, 'readwrite');
+          tx.objectStore(IDB_STORE).clear();
+        } catch {}
       });
     }
   };

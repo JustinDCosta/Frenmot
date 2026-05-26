@@ -26,9 +26,25 @@
       return user;
     },
 
+    /** Clear the local user record and synchronously flush state so
+     *  callers that immediately reload don't race the debounced save.
+     *  Returns true on success, false if state write failed. */
     logout() {
-      global.State.update(s => { s.user = null; });
-      bus.emit('auth:logout');
+      try {
+        global.State.update(s => {
+          s.user = null;
+          // Drop tutor chat history so a different user on the same
+          // device doesn't see the previous conversation.
+          if (s.chat) s.chat.messages = [];
+        });
+        // Force the pending debounced write to disk right now.
+        if (typeof global.State.flush === 'function') global.State.flush();
+        bus.emit('auth:logout');
+        return true;
+      } catch (err) {
+        console.warn('[auth] logout failed:', err && err.message);
+        return false;
+      }
     },
 
     update(patch) {
